@@ -1,0 +1,82 @@
+# Checks every push and pull request: formatting, types, tests, build, and the built package on Node and Deno.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# A newer push makes the running check pointless.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: .tool-versions
+      - run: bun install --frozen-lockfile
+      - run: bun run format:check
+      - run: bun run lint
+      - run: bun test
+      - run: bun run build
+      - name: Built version matches package.json
+        run: git diff --exit-code src/version.ts
+      - name: README parameter tables match openapi.json (bun docs)
+        run: bun docs && git diff --exit-code README.md
+      - run: bun scripts/smoke.mjs
+      - name: Pack the package as npm would publish it
+        run: mkdir -p pack && npm pack --pack-destination pack
+      - uses: actions/upload-artifact@v7
+        with:
+          name: package
+          path: pack/*.tgz
+          retention-days: 1
+
+  # The packed tarball, installed into an empty project, like a user gets it.
+  runtimes:
+    name: runtime (${{ matrix.runtime }})
+    needs: check
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runtime: node-20, node: "20" }
+          - { runtime: node-22, node: "22" }
+          - { runtime: node-24, node: "24" }
+          - { runtime: deno, node: "24" }
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          name: package
+          path: pack
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Install the tarball into an empty project
+        run: |
+          mkdir -p "$RUNNER_TEMP/app" && cd "$RUNNER_TEMP/app"
+          npm init -y > /dev/null
+          npm pkg set type=module
+          npm install "$GITHUB_WORKSPACE"/pack/*.tgz
+          cp "$GITHUB_WORKSPACE/scripts/smoke.mjs" .
+      - if: matrix.runtime != 'deno'
+        working-directory: ${{ runner.temp }}/app
+        run: node smoke.mjs
+      - if: matrix.runtime == 'deno'
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - if: matrix.runtime == 'deno'
+        working-directory: ${{ runner.temp }}/app
+        run: deno run smoke.mjs

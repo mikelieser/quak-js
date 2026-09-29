@@ -1,0 +1,4 @@
+dist/
+bun.lock
+openapi.json
+src/generated/

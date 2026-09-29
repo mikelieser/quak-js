@@ -1,0 +1,63 @@
+# A tag like v0.9.1 (from `bun release patch`) publishes the package to npm with Trusted Publishing: npm trusts this
+# workflow via OIDC, there is no NPM_TOKEN. Provenance comes with it automatically (public repo, public package).
+# npmjs.com → @quak/js → Settings → Trusted publishing must name quakparty/quak-js and release.yml, with direct
+# publishing allowed (new configurations only allow `npm stage publish` by default since 03.09.2026). The very first
+# version (0.9.0) was published by hand, trusted publishing needs an existing package.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+      - name: Tag matches the version in package.json
+        run: |
+          version="v$(node -p 'require("./package.json").version')"
+          test "$version" = "$GITHUB_REF_NAME" || { echo "Tag $GITHUB_REF_NAME, package.json $version"; exit 1; }
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: .tool-versions
+      # Trusted Publishing needs Node >= 22.14 and npm >= 11.5.1
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - run: npm install -g npm@12.1.0
+      - run: bun install --frozen-lockfile
+      - run: bun run lint
+      - run: bun test
+      - run: bun run build
+      - run: git diff --exit-code src/version.ts
+      - run: node scripts/smoke.mjs
+      - run: npm publish --access public
+
+  github-release:
+    needs: publish
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - name: Release notes from CHANGELOG.md
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v v="$version" '$0 ~ "^## " v "( |$)" {found=1; next} found && /^## / {exit} found {print}' CHANGELOG.md > notes.md
+          cat notes.md
+      - name: GitHub release (pre-release while 0.x)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          flags=""
+          case "$GITHUB_REF_NAME" in v0.*) flags="--prerelease" ;; esac
+          gh release create "$GITHUB_REF_NAME" --verify-tag --title "$GITHUB_REF_NAME" --notes-file notes.md $flags
