@@ -4,6 +4,8 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+## 0.9.2 - 2026-09-29
+
 - Internal option `client` for Quak's own clients built on this package: their `<name>/<version>` in `X-Quak-Client`
   instead of `js/<version>`
 
