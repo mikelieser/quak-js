@@ -48,7 +48,8 @@ jobs:
           package-manager-cache: false
       - run: npm install -g npm@12.1.0
       # A tarball is published as it is, without lifecycle scripts: CI already checked and built it.
-      - run: npm publish pack/*.tgz --access public
+      # "./": without it npm 12 reads pack/<file>.tgz as the GitHub shorthand user/repo
+      - run: npm publish ./pack/*.tgz --access public
 
   github-release:
     needs: publish
