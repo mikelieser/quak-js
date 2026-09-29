@@ -4,6 +4,8 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+## 0.9.1 - 2026-09-29
+
 - Package description names quak.party and text-to-speech
 - OpenAPI snapshot updated: `POST /v1/workspaces` documents the new limits (20 own workspaces, 100 starting credits)
 
