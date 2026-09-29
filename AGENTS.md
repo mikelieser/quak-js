@@ -20,9 +20,10 @@ commit messages. The package is for third parties.
 - `src/types.ts`: all parameter and response types, **only derived** from `src/generated/schema.ts`, never rebuilt by
   hand. When the schema lacks a type, fix it in the API, not here.
 - `src/errors.ts`: `QuakError` and `unwrap`.
-- `src/client-header.ts`: `X-Quak-Client`, always `js/<version>` plus `(<os>; <arch>)` outside browsers. There is no
-  option to override it (plays made through this package must stay recognisable in the history). Never send a host
-  name.
+- `src/client-header.ts`: `X-Quak-Client`, `js/<version>` plus `(<os>; <arch>)` outside browsers. Extra `headers`
+  cannot override it (plays made through this package must stay recognisable in the history). The only exception is
+  the internal option `client` for Quak's own clients built on this package (the Raycast extension: `raycast/<version>`),
+  documented in JSDoc only, never in the README. Never send a host name.
 - `src/generated/schema.ts` and `openapi.json`: generated and committed, never edit by hand.
 - `src/version.ts`: written from `package.json` (`scripts/sync-version.ts`, runs on `build` and `release`).
 - `scripts/`: `generate.ts`, `docs.ts`, `sync-version.ts`, `release.ts`, `smoke.mjs` (the built package on Node and

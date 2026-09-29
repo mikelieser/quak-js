@@ -44,8 +44,14 @@ export type QuakOptions = {
   baseUrl?: string | undefined;
   /** A custom fetch (tests, proxies, retries). Defaults to the global fetch. */
   fetch?: typeof globalThis.fetch | undefined;
-  /** Extra headers for every request. `X-Quak-Client` is always the library's own. */
+  /** Extra headers for every request. They cannot replace `X-Quak-Client`. */
   headers?: Record<string, string> | undefined;
+  /**
+   * Internal, for Quak's own clients built on this package (like `"raycast/1.0.0"`): the `<name>/<version>` sent in
+   * `X-Quak-Client` instead of `js/<version>`, so their plays show up as themselves in the history. The library still
+   * adds `(<os>; <arch>)`.
+   */
+  client?: string | undefined;
 };
 
 export type RawClient = Client<Paths>;
@@ -138,7 +144,10 @@ export class Quak {
   };
 
   constructor(options: QuakOptions = {}) {
-    const headers: Record<string, string> = { ...options.headers, "X-Quak-Client": clientHeader() };
+    const headers: Record<string, string> = {
+      ...options.headers,
+      "X-Quak-Client": clientHeader(undefined, options.client),
+    };
     if (options.apiKey) {
       headers.Authorization = `Bearer ${options.apiKey}`;
     }

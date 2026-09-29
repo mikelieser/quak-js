@@ -23,6 +23,13 @@ describe("client header", () => {
     expect(clientHeader({ Deno: { build: { os: "linux", arch: "aarch64" } } })).toBe(`js/${VERSION} (linux; arm64)`);
   });
 
+  test("an own client name instead of js, the system stays", () => {
+    const node = { process: { platform: "darwin", arch: "arm64", versions: { node: "24.0.0" } } };
+    expect(clientHeader(node, "raycast/1.0.0")).toBe("raycast/1.0.0 (macos; arm64)");
+    expect(clientHeader({}, "raycast/1.0.0")).toBe("raycast/1.0.0");
+    expect(clientHeader({}, " ")).toBe(`js/${VERSION}`);
+  });
+
   test("browsers: no system", () => {
     expect(clientHeader({})).toBe(`js/${VERSION}`);
     // a bundler's process shim without versions.node is no runtime

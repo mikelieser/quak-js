@@ -20,6 +20,14 @@ describe("headers", () => {
     expect(calls[0]!.request.headers.get("x-quak-client")).toStartWith(`js/${VERSION}`);
   });
 
+  test("Quak's own clients name themselves with client", async () => {
+    const { quak, calls } = mockQuak({ client: "raycast/1.0.0", headers: { "X-Quak-Client": "my-app/1.2.3" } });
+    await quak.speakers.list();
+    const header = calls[0]!.request.headers.get("x-quak-client")!;
+    expect(header).toStartWith("raycast/1.0.0");
+    expect(header).not.toContain("js/");
+  });
+
   test("sends no Authorization without a key", async () => {
     const { quak, calls } = mockQuak({ apiKey: undefined }, () => json({ status: "ok" }));
     await quak.api.GET("/health");

@@ -25,11 +25,12 @@ export function systemComment(globals: RuntimeGlobals = globalThis as RuntimeGlo
 }
 
 /**
- * The value of `X-Quak-Client`: always `js/<version>`, plus the system where the runtime tells it, like the CLI's
- * `quak-cli/<version> (<os>; <arch>)`. Plays sent through this package are recognisable by it.
+ * The value of `X-Quak-Client`: `js/<version>`, plus the system where the runtime tells it, like the CLI's
+ * `quak-cli/<version> (<os>; <arch>)`. Plays sent through this package are recognisable by it. Quak's own clients built
+ * on this package pass their `<name>/<version>` as `client` instead.
  */
-export function clientHeader(globals?: RuntimeGlobals): string {
+export function clientHeader(globals?: RuntimeGlobals, client?: string): string {
   const system = systemComment(globals);
-  const name = `js/${VERSION}`;
+  const name = client?.trim() || `js/${VERSION}`;
   return system ? `${name} ${system}` : name;
 }
