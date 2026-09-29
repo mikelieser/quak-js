@@ -11168,7 +11168,7 @@
           "Workspace"
         ],
         "summary": "Create workspace",
-        "description": "Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). A new, empty workspace, you become its admin (login key only). At most 5 own workspaces including the personal one (409 ERROR_WORKSPACE_LIMIT), invitations to other workspaces do not count. It starts without credits (the starting credits come with the sign-up only), its time zone and TTS language are yours. Work in it with the header X-Quak-Workspace.",
+        "description": "Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). A new, empty workspace, you become its admin (login key only). At most 20 own workspaces including the personal one (409 ERROR_WORKSPACE_LIMIT), invitations to other workspaces do not count. It starts with 100 credits (the first 20 workspaces you create, deleted ones and the personal one included), after that without. Its time zone and TTS language are yours. Work in it with the header X-Quak-Workspace.",
         "requestBody": {
           "required": true,
           "content": {
