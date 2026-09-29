@@ -3,6 +3,9 @@
 # npmjs.com → @quak/js → Settings → Trusted publishing must name quakparty/quak-js and release.yml, with direct
 # publishing allowed (new configurations only allow `npm stage publish` by default since 03.09.2026). The very first
 # version (0.9.0) was published by hand, trusted publishing needs an existing package.
+#
+# Order: the tag must match package.json, then the complete CI (ci.yml: format, types, tests, build, README tables,
+# the packed tarball on Node 20/22/24 and Deno), then exactly the tarball CI packed and tested goes to npm.
 name: Release
 
 on:
@@ -13,20 +16,30 @@ permissions:
   contents: read
 
 jobs:
-  publish:
+  tag:
     runs-on: ubuntu-24.04
-    permissions:
-      contents: read
-      id-token: write
     steps:
       - uses: actions/checkout@v7
       - name: Tag matches the version in package.json
         run: |
           version="v$(node -p 'require("./package.json").version')"
           test "$version" = "$GITHUB_REF_NAME" || { echo "Tag $GITHUB_REF_NAME, package.json $version"; exit 1; }
-      - uses: oven-sh/setup-bun@v2
+
+  ci:
+    needs: tag
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    needs: ci
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v8
         with:
-          bun-version-file: .tool-versions
+          name: package
+          path: pack
       # Trusted Publishing needs Node >= 22.14 and npm >= 11.5.1
       - uses: actions/setup-node@v7
         with:
@@ -34,13 +47,8 @@ jobs:
           registry-url: https://registry.npmjs.org
           package-manager-cache: false
       - run: npm install -g npm@12.1.0
-      - run: bun install --frozen-lockfile
-      - run: bun run lint
-      - run: bun test
-      - run: bun run build
-      - run: git diff --exit-code src/version.ts
-      - run: node scripts/smoke.mjs
-      - run: npm publish --access public
+      # A tarball is published as it is, without lifecycle scripts: CI already checked and built it.
+      - run: npm publish pack/*.tgz --access public
 
   github-release:
     needs: publish

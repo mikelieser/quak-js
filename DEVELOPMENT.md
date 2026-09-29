@@ -26,5 +26,6 @@ git push origin main v0.9.1
 
 `bun release` needs a clean tree and a filled `## Unreleased` section in `CHANGELOG.md`. It bumps `package.json` and
 `src/version.ts`, dates the changelog section, runs lint, tests and build, commits `release: v0.9.1` and tags `v0.9.1`.
-The tag starts the release workflow, which checks the tag against `package.json` and publishes to npm with Trusted
-Publishing (with provenance), then creates the GitHub release.
+The tag starts the release workflow: it checks the tag against `package.json`, runs the complete CI (`ci.yml`, including
+the packed tarball on Node 20/22/24 and Deno), publishes exactly that tarball to npm with Trusted Publishing (with
+provenance), then creates the GitHub release.

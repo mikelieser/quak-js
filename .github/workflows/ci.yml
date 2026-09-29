@@ -6,6 +6,8 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+  # release.yml runs the whole check before it publishes the tarball packed here.
+  workflow_call:
 
 # A newer push makes the running check pointless.
 concurrency:

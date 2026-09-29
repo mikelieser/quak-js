@@ -46,8 +46,9 @@ commit messages. The package is for third parties.
 1. Add the changes under `## Unreleased` in `CHANGELOG.md`.
 2. `bun release patch|minor|major|x.y.z`: bumps the version, dates the section, checks, commits `release: vX.Y.Z` and
    tags.
-3. `git push origin main vX.Y.Z`: `.github/workflows/release.yml` checks the tag against `package.json`, publishes via
-   npm Trusted Publishing (OIDC, no token, provenance included) and creates the GitHub release.
+3. `git push origin main vX.Y.Z`: `.github/workflows/release.yml` checks the tag against `package.json`, runs the
+   complete CI (`ci.yml` as a reusable workflow), publishes the tarball CI packed and tested via npm Trusted Publishing
+   (OIDC, no token, provenance included) and creates the GitHub release.
 
 Versions stay on 0.9.x for now, like the web app and the CLI, also after the launch; when to move to 1.0 is decided
 later. The first version, 0.9.0, is
