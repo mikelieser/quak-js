@@ -6,6 +6,9 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 - OpenAPI snapshot updated: new limits (text 1,000 characters, talk and talk live 180 s, file, processed url and clips
   180 s with 10 MB uploads), `limits` on the workspace (`GET /v1/workspace` on the raw client)
+- OpenAPI snapshot updated: upload tickets (`POST /v1/upload-tickets`, a single-use `qk_upt_…` key for browser uploads,
+  usable as `apiKey` for `play.file`, `play.talk` and `POST /v1/clips`), resending invites, the profile name, the error
+  codes `ERROR_INVITE_ACCEPTED` and `ERROR_TOO_MANY_REQUESTS`
 
 ## 0.9.2 - 2026-09-29
 
