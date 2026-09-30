@@ -711,7 +711,7 @@ export interface paths {
         put?: never;
         /**
          * Talk
-         * @description Scope: `play`. Plays what someone said into a mic, after release. Unlike play/file the audio runs through the voice processing (high-pass, noise gate, auto gain, a fixed EQ), silence at start and end is cut and at most 60 s of speech are played. Effects that need the whole take (faster, slower, reverse) work here. With effects the effect can change during the take. All other parameters are plain form fields in the same request. Credits: 2 + 1 per started 10 s of speech after trimming, the preview only the speech part.
+         * @description Scope: `play`. Plays what someone said into a mic, after release. Unlike play/file the audio runs through the voice processing (high-pass, noise gate, auto gain, a fixed EQ), silence at start and end is cut and at most 180 s (3 minutes) of speech are played. Effects that need the whole take (faster, slower, reverse) work here. With effects the effect can change during the take. All other parameters are plain form fields in the same request. Credits: 2 + 1 per started 10 s of speech after trimming, the preview only the speech part.
          */
         post: operations["postV1PlayTalk"];
         delete?: never;
@@ -731,7 +731,7 @@ export interface paths {
          * Talk live (WebSocket)
          * @description **WebSocket.** Connect to `wss://<host>/v1/play/talk/live` (a GET with `Upgrade: websocket`), not a plain HTTP request. The protocol is below.
          *
-         *     Beta, may change without notice. Plays what someone says while they say it. Start with the first message {"type":"start","apiKey":"…","to":…,"volume":…,"volumes":{…},"effect":…,"effectIntensity":…,"ambience":…,"ambienceIntensity":…,"intro":…,"outro":…,"gap":…,"priority":…,"quietHours":…,"format":{"encoding":"opus"|"pcm_s16le"|"pcm_f32le","sampleRate":16000|24000|44100|48000}} (or the Authorization header). From a browser that should not see the key: "ticket":"qk_wst_…" instead of "apiKey", a one-time ticket from POST /v1/ws/tickets with purpose talk-live (60 s, it names the workspace; an invalid one closes with 4401 and ERROR_INVALID_TICKET). Browsers from other origins are refused (4403). The answer is {"type":"ready","play":{…}}, then send the audio as binary frames (Opus: one raw 20 ms packet per frame; PCM: mono, little endian). While talking: {"type":"update","effect":…,"effectIntensity":…,"ambience":…,"ambienceIntensity":…,"muted":…} → {"type":"updated",…}. End with {"type":"end"} → {"type":"done","play":{…},"credits":…,"balance":…} (balance: the workspace's credits after the charge). At most 5 minutes, a warning comes 30 s before. Faster, slower and reverse do not work live. Errors: {"type":"error","code","message","field","requestId"} and the socket closes with 4000 + the HTTP status. Credits: 2 at the start (with credits for a minute of speech), 1 per started 10 s of speech after the end.
+         *     Beta, may change without notice. Plays what someone says while they say it. Start with the first message {"type":"start","apiKey":"…","to":…,"volume":…,"volumes":{…},"effect":…,"effectIntensity":…,"ambience":…,"ambienceIntensity":…,"intro":…,"outro":…,"gap":…,"priority":…,"quietHours":…,"format":{"encoding":"opus"|"pcm_s16le"|"pcm_f32le","sampleRate":16000|24000|44100|48000}} (or the Authorization header). From a browser that should not see the key: "ticket":"qk_wst_…" instead of "apiKey", a one-time ticket from POST /v1/ws/tickets with purpose talk-live (60 s, it names the workspace; an invalid one closes with 4401 and ERROR_INVALID_TICKET). Browsers from other origins are refused (4403). The answer is {"type":"ready","play":{…}}, then send the audio as binary frames (Opus: one raw 20 ms packet per frame; PCM: mono, little endian). While talking: {"type":"update","effect":…,"effectIntensity":…,"ambience":…,"ambienceIntensity":…,"muted":…} → {"type":"updated",…}. End with {"type":"end"} → {"type":"done","play":{…},"credits":…,"balance":…} (balance: the workspace's credits after the charge). At most 3 minutes, a warning comes 30 s before. Faster, slower and reverse do not work live. Errors: {"type":"error","code","message","field","requestId"} and the socket closes with 4000 + the HTTP status. Credits: 2 at the start (with credits for a minute of speech), 1 per started 10 s of speech after the end.
          */
         get: operations["wsV1PlayTalkLive"];
         put?: never;
@@ -793,7 +793,7 @@ export interface paths {
         put?: never;
         /**
          * Play a file
-         * @description Scope: `play`. Plays an uploaded audio file (multipart/form-data, field file, max. 10 MB and 60 s, any common audio format). All other parameters (volume, to, quietHours, priority, preview, intro, outro, gap, effect, effectIntensity, ambience, ambienceIntensity, skipCache) are plain form fields in the same request. Credits: 2.
+         * @description Scope: `play`. Plays an uploaded audio file (multipart/form-data, field file, max. 10 MB and 180 s, any common audio format). All other parameters (volume, to, quietHours, priority, preview, intro, outro, gap, effect, effectIntensity, ambience, ambienceIntensity, skipCache) are plain form fields in the same request. Credits: 2.
          */
         post: operations["postV1PlayFile"];
         delete?: never;
@@ -813,7 +813,7 @@ export interface paths {
         put?: never;
         /**
          * Play a URL
-         * @description Scope: `play`. Plays audio from a URL. With process (default) the server downloads it (max. 10 MB and 60 s) and adds intro, outro and effect, credits: 2. With process false Sonos fetches the URL itself, credits: 1.
+         * @description Scope: `play`. Plays audio from a URL. With process (default) the server downloads it (max. 10 MB and 180 s) and adds intro, outro and effect, credits: 2. With process false Sonos fetches the URL itself, credits: 1.
          */
         post: operations["postV1PlayUrl"];
         delete?: never;
@@ -935,7 +935,7 @@ export interface paths {
         put?: never;
         /**
          * Save a play as a clip
-         * @description Scope: `play`. Keeps the audio of a play as one of your clips, exactly as it played (intro, outro and effect included), to play it again with POST /v1/play/clip or use it as intro or outro. Works for text, talk, file and processed URL plays, also previews, as long as their audio is still there (the audio cache time, at least 5 minutes after the play). Costs 2 credits, like uploading a clip.
+         * @description Scope: `play`. Keeps the audio of a play as one of your clips, exactly as it played (intro, outro and effect included), to play it again with POST /v1/play/clip or use it as intro or outro. Works for text, talk, file and processed URL plays and for sounds and clips played with processing (process: true, e.g. with intro, outro or an effect), also previews, as long as their audio is still there (the audio cache time, at least 5 minutes after the play). Costs 2 credits, like uploading a clip. A sound or clip without processing is already in the library: 400 ERROR_UNABLE_TO_SAVE.
          */
         post: operations["postV1PlaysByUuidSave"];
         delete?: never;
@@ -979,7 +979,7 @@ export interface paths {
         put?: never;
         /**
          * Create a clip
-         * @description Scope: `manage`. Uploads an own clip (multipart/form-data: file, optional name and slug; max. 10 MB and 60 s, any common audio format). It is converted to MP3 once and then played from the CDN like a sound, or used as intro or outro with clip:<slug>. Creating a clip costs 2 credits (402 when there are not enough), the balance is in X-Quak-Credits.
+         * @description Scope: `manage`. Uploads an own clip (multipart/form-data: file, optional name and slug; max. 10 MB and 180 s, any common audio format). It is converted to MP3 once and then played from the CDN like a sound, or used as intro or outro with clip:<slug>. Creating a clip costs 2 credits (402 when there are not enough), the balance is in X-Quak-Credits.
          */
         post: operations["postV1Clips"];
         delete?: never;
@@ -2702,6 +2702,34 @@ export interface operations {
                             };
                             /** @description How long generated play audio stays on the server after its last use, in minutes: 1440 (default), 720, 180, 60 or 5. */
                             audioCacheMinutes: number;
+                            /** @description What a play may be in this workspace. Read it instead of hard-coding the numbers: they may change and later depend on the plan. */
+                            limits: {
+                                /**
+                                 * @description max. characters of a text play
+                                 * @example 1000
+                                 */
+                                textCharacters: number;
+                                /**
+                                 * @description max. seconds of speech in a recorded talk, longer takes are cut
+                                 * @example 180
+                                 */
+                                talkSeconds: number;
+                                /**
+                                 * @description max. seconds of talk live, a warning comes 30 s before
+                                 * @example 180
+                                 */
+                                liveSeconds: number;
+                                /**
+                                 * @description max. seconds of a file, a processed url and an own clip
+                                 * @example 180
+                                 */
+                                audioSeconds: number;
+                                /**
+                                 * @description max. bytes of an upload (file, talk, clip) and a url download
+                                 * @example 10485760
+                                 */
+                                uploadBytes: number;
+                            };
                             /** Format: date-time */
                             createdAt: string;
                         };
@@ -2961,6 +2989,34 @@ export interface operations {
                             };
                             /** @description How long generated play audio stays on the server after its last use, in minutes: 1440 (default), 720, 180, 60 or 5. */
                             audioCacheMinutes: number;
+                            /** @description What a play may be in this workspace. Read it instead of hard-coding the numbers: they may change and later depend on the plan. */
+                            limits: {
+                                /**
+                                 * @description max. characters of a text play
+                                 * @example 1000
+                                 */
+                                textCharacters: number;
+                                /**
+                                 * @description max. seconds of speech in a recorded talk, longer takes are cut
+                                 * @example 180
+                                 */
+                                talkSeconds: number;
+                                /**
+                                 * @description max. seconds of talk live, a warning comes 30 s before
+                                 * @example 180
+                                 */
+                                liveSeconds: number;
+                                /**
+                                 * @description max. seconds of a file, a processed url and an own clip
+                                 * @example 180
+                                 */
+                                audioSeconds: number;
+                                /**
+                                 * @description max. bytes of an upload (file, talk, clip) and a url download
+                                 * @example 10485760
+                                 */
+                                uploadBytes: number;
+                            };
                             /** Format: date-time */
                             createdAt: string;
                         };
@@ -3334,6 +3390,34 @@ export interface operations {
                             };
                             /** @description How long generated play audio stays on the server after its last use, in minutes: 1440 (default), 720, 180, 60 or 5. */
                             audioCacheMinutes: number;
+                            /** @description What a play may be in this workspace. Read it instead of hard-coding the numbers: they may change and later depend on the plan. */
+                            limits: {
+                                /**
+                                 * @description max. characters of a text play
+                                 * @example 1000
+                                 */
+                                textCharacters: number;
+                                /**
+                                 * @description max. seconds of speech in a recorded talk, longer takes are cut
+                                 * @example 180
+                                 */
+                                talkSeconds: number;
+                                /**
+                                 * @description max. seconds of talk live, a warning comes 30 s before
+                                 * @example 180
+                                 */
+                                liveSeconds: number;
+                                /**
+                                 * @description max. seconds of a file, a processed url and an own clip
+                                 * @example 180
+                                 */
+                                audioSeconds: number;
+                                /**
+                                 * @description max. bytes of an upload (file, talk, clip) and a url download
+                                 * @example 10485760
+                                 */
+                                uploadBytes: number;
+                            };
                             /** Format: date-time */
                             createdAt: string;
                         };
@@ -3555,6 +3639,34 @@ export interface operations {
                             };
                             /** @description How long generated play audio stays on the server after its last use, in minutes: 1440 (default), 720, 180, 60 or 5. */
                             audioCacheMinutes: number;
+                            /** @description What a play may be in this workspace. Read it instead of hard-coding the numbers: they may change and later depend on the plan. */
+                            limits: {
+                                /**
+                                 * @description max. characters of a text play
+                                 * @example 1000
+                                 */
+                                textCharacters: number;
+                                /**
+                                 * @description max. seconds of speech in a recorded talk, longer takes are cut
+                                 * @example 180
+                                 */
+                                talkSeconds: number;
+                                /**
+                                 * @description max. seconds of talk live, a warning comes 30 s before
+                                 * @example 180
+                                 */
+                                liveSeconds: number;
+                                /**
+                                 * @description max. seconds of a file, a processed url and an own clip
+                                 * @example 180
+                                 */
+                                audioSeconds: number;
+                                /**
+                                 * @description max. bytes of an upload (file, talk, clip) and a url download
+                                 * @example 10485760
+                                 */
+                                uploadBytes: number;
+                            };
                             /** Format: date-time */
                             createdAt: string;
                         };
@@ -4503,6 +4615,34 @@ export interface operations {
                             };
                             /** @description How long generated play audio stays on the server after its last use, in minutes: 1440 (default), 720, 180, 60 or 5. */
                             audioCacheMinutes: number;
+                            /** @description What a play may be in this workspace. Read it instead of hard-coding the numbers: they may change and later depend on the plan. */
+                            limits: {
+                                /**
+                                 * @description max. characters of a text play
+                                 * @example 1000
+                                 */
+                                textCharacters: number;
+                                /**
+                                 * @description max. seconds of speech in a recorded talk, longer takes are cut
+                                 * @example 180
+                                 */
+                                talkSeconds: number;
+                                /**
+                                 * @description max. seconds of talk live, a warning comes 30 s before
+                                 * @example 180
+                                 */
+                                liveSeconds: number;
+                                /**
+                                 * @description max. seconds of a file, a processed url and an own clip
+                                 * @example 180
+                                 */
+                                audioSeconds: number;
+                                /**
+                                 * @description max. bytes of an upload (file, talk, clip) and a url download
+                                 * @example 10485760
+                                 */
+                                uploadBytes: number;
+                            };
                             /** Format: date-time */
                             createdAt: string;
                         };
@@ -8643,7 +8783,7 @@ export interface operations {
                 "multipart/form-data": {
                     /**
                      * Format: binary
-                     * @description the audio file, max. 10 MB and 60 s, any common audio format (MP3, M4A/AAC, Opus, WAV, FLAC etc.), mono is enough, compressed formats keep the upload small
+                     * @description the audio file, max. 10 MB and 180 s, any common audio format (MP3, M4A/AAC, Opus, WAV, FLAC etc.), mono is enough, compressed formats keep the upload small
                      * @default File
                      */
                     file: string;
@@ -11040,7 +11180,7 @@ export interface operations {
                 "multipart/form-data": {
                     /**
                      * Format: binary
-                     * @description the audio file, max. 10 MB and 60 s, any common audio format (MP3, M4A/AAC, Opus, WAV, FLAC etc.), mono is enough, compressed formats keep the upload small
+                     * @description the audio file, max. 10 MB and 180 s, any common audio format (MP3, M4A/AAC, Opus, WAV, FLAC etc.), mono is enough, compressed formats keep the upload small
                      * @default File
                      */
                     file: string;

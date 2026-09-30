@@ -4,6 +4,9 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+- OpenAPI snapshot updated: new limits (text 1,000 characters, talk and talk live 180 s, file, processed url and clips
+  180 s with 10 MB uploads), `limits` on the workspace (`GET /v1/workspace` on the raw client)
+
 ## 0.9.2 - 2026-09-29
 
 - Internal option `client` for Quak's own clients built on this package: their `<name>/<version>` in `X-Quak-Client`

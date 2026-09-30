@@ -163,7 +163,7 @@ await quak.play.clip({
 
 ### file
 
-Upload and play an audio file, max. 10 MB and 60 s, as multipart. A `File` brings its own name; for raw bytes pass
+Upload and play an audio file, max. 10 MB and 180 s, as multipart. A `File` brings its own name; for raw bytes pass
 `filename`. Lists go as CSV (`to`), objects as JSON (`volumes`).
 
 ```ts
@@ -317,12 +317,12 @@ Plus the [common parameters](#common-parameters): `intro`, `outro`, `gap`, `effe
 
 <!-- params:file -->
 
-| Name        | Type                                    | Required | Description                                                                                                                                                 |
-| ----------- | --------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `file`      | `Blob` \| `Uint8Array` \| `ArrayBuffer` | yes      | the audio file, max. 10 MB and 60 s, any common audio format (MP3, M4A/AAC, Opus, WAV, FLAC etc.), mono is enough, compressed formats keep the upload small |
-| `filename`  | `string`                                |          | name of the upload, helps the server tell the format of raw bytes; default: the File's name or "audio"                                                      |
-| `skipCache` | `boolean`                               |          | true: produce the audio again instead of using the cache, for text also a new synthesis. Ignored without processing                                         |
-| `process`   | `boolean`                               |          | always processed: true changes nothing, false is an error (400)                                                                                             |
+| Name        | Type                                    | Required | Description                                                                                                                                                  |
+| ----------- | --------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `file`      | `Blob` \| `Uint8Array` \| `ArrayBuffer` | yes      | the audio file, max. 10 MB and 180 s, any common audio format (MP3, M4A/AAC, Opus, WAV, FLAC etc.), mono is enough, compressed formats keep the upload small |
+| `filename`  | `string`                                |          | name of the upload, helps the server tell the format of raw bytes; default: the File's name or "audio"                                                       |
+| `skipCache` | `boolean`                               |          | true: produce the audio again instead of using the cache, for text also a new synthesis. Ignored without processing                                          |
+| `process`   | `boolean`                               |          | always processed: true changes nothing, false is an error (400)                                                                                              |
 
 Plus the [common parameters](#common-parameters): `intro`, `outro`, `gap`, `effect`, `effectIntensity`, `ambience`, `ambienceIntensity`, `volume`, `volumes`, `to`, `quietHours`, `priority`, `startIn`, `preview`.
 
