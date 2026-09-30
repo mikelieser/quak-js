@@ -4,6 +4,8 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+## 0.9.4 - 2026-09-30
+
 - OpenAPI snapshot updated, **breaking in the API:** key scopes are `play` < `create` < `manage`, `read` is gone;
   uploading and saving clips needs `create`. The lookups need `play`
 - `quak.stop()` without `to` stops all speakers (API change, the client already sent no `to`)
