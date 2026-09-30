@@ -4,6 +4,10 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+- OpenAPI snapshot updated, **breaking in the API:** key scopes are `play` < `create` < `manage`, `read` is gone;
+  uploading and saving clips needs `create`. The lookups need `play`
+- Plays carry `canReplay` and `canSave`; new error codes `ERROR_NO_TESTERS` and `ERROR_NOT_VOTED`
+
 ## 0.9.3 - 2026-09-30
 
 - OpenAPI snapshot updated: new limits (text 1,000 characters, talk and talk live 180 s, file, processed url and clips

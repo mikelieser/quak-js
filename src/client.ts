@@ -102,7 +102,7 @@ export class Quak {
     stop(uuid: string): Promise<PlayStopResponse>;
   };
 
-  // Lookups: what a play can name (read scope). Management routes (keys, workspace, members, Sonos, clip uploads
+  // Lookups: what a play can name (play scope). Management routes (keys, workspace, members, Sonos, clip uploads
   // etc.) stay on the raw client `api`.
 
   /** Where to play: the slugs for `to`. */

@@ -109,6 +109,8 @@ describe("plays", () => {
       "POST /v1/plays/abc/stop",
     ]);
     expect(await calls[0]!.request.json()).toEqual({ to: "kitchen" });
+    // without to: no to in the body, the API stops all speakers
+    expect(await calls[1]!.request.json()).toEqual({});
   });
 });
 

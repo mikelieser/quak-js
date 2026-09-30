@@ -31,8 +31,8 @@ console.log(play.status, play.credits, quak.credits);
 ```
 
 Create an API key in the [web app](https://quak.party/app/settings/keys) under Settings → API keys (or with
-`POST /v1/keys`). A key belongs to one workspace and has a scope: `read` (speakers, voices, sounds, history) < `play`
-(and play, costs credits) < `manage` (and settings). `play` is enough for announcements. Keys look like `qk_key_…`;
+`POST /v1/keys`). A key belongs to one workspace and has a scope: `play` (play, costs credits, plus speakers, voices,
+sounds and history) < `create` (and upload and save clips) < `manage` (and settings). `play` is enough for announcements. Keys look like `qk_key_…`;
 keep them out of browser code you ship to others.
 
 ## Playing
@@ -367,7 +367,7 @@ const { data: last } = await quak.plays.last(); // your newest play
 
 ### Lookups
 
-Everything a play can name, read-only (scope `read`). Each returns the parsed answer, `{ data, … }`.
+Everything a play can name, read-only (scope `play`). Each returns the parsed answer, `{ data, … }`.
 
 | Method                                                                                 | Route                                             | For                            |
 | -------------------------------------------------------------------------------------- | ------------------------------------------------- | ------------------------------ |

@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Quak API",
-    "description": "The Quak API plays announcements on Sonos speakers: text-to-speech, sounds, own clips, files, URLs and push-to-talk, with voice effects and ambiences, quiet hours and a live history.\n\n## Authentication\n\nTo get an API key:\n\n1. Call `POST /v1/user/signup` (new account) or `POST /v1/user/login` with your email address.\n\n2. Confirm the request via the email link.\n\n3. Exchange the `verifyToken` using `POST /v1/user/login/key` to receive your API key.\n\nUse the API key on protected endpoints with either:\n\n- Header: `Authorization: Bearer <API_KEY>` (raw token also works). Recommended.\n\n- Query parameter: `?apikey=<API_KEY>`, handy for demos and quick tests. A key in a URL can end up in logs, the browser history and referrers of the tools on the way, so use the header in integrations.\n\nAPI keys look like `qk_key_…` (43 characters). The full key is shown once, when it is made (`POST /v1/keys`, `POST /v1/user/login/key`); Quak only keeps a hash of it. Lists show its start (`qk_key_7Fh2…`).\n\n## Workspaces, roles and scopes\n\nA workspace holds the credits and subscription, the Sonos accounts and speakers, groups, clips, keys and the playback defaults (`GET /v1/workspace`). Every user gets a personal workspace at sign-up and can be a member of more (`GET /v1/workspaces`, invitations with `POST /v1/workspace/invites`); plays keep who triggered them.\n\nWhich workspace a request works in: a **login key** (from logging in with an app, the website or the CLI) belongs to you, not to a workspace. Name the workspace per request with the header `X-Quak-Workspace: <slug or id>`; without it the request works in the workspace you named last, else your personal one. Switching needs no new login. A key made with `POST /v1/keys` belongs to one workspace; a header naming another one is `403 ERROR_WORKSPACE_MISMATCH`. The workspace of a request is in the `X-Quak-Workspace-UUID` header of the answer.\n\nBoth have to allow a request: the key's **scope** and your **role** in the workspace. Scopes include the ones below: `read` (speakers, voices, sounds, credits, history) < `play` (and play, costs credits) < `manage` (and settings, Sonos accounts, keys, groups, clips, members). Keys made with `POST /v1/keys` get `play` unless asked otherwise, login keys `manage`. Roles: `MEMBER` reads and plays (and adds clips); `ADMIN` also runs the workspace, several admins are equal. Changing the email and creating workspaces need a login key. Every endpoint names its scope; with too little the answer is `403 ERROR_INSUFFICIENT_SCOPE`, with a role too low `403 ERROR_INSUFFICIENT_ROLE`, both with the need in `details.required`.\n\n## Identifiers\n\n- `id`: stable UUID identifier exposed in public API payloads.\n\n- `slug`: human-friendly identifier on slug-enabled resources (for example Sonos accounts).\n\nFor slug-enabled resources, `/{id}` path params can accept either `id` or `slug`.\n\n## Playback\n\nPlay text (`POST /v1/play/text`), built-in sounds, own clips, URLs, uploaded files and what someone said into a mic (`POST /v1/play/talk` after release, `GET /v1/play/talk/live` as a WebSocket while talking) on your Sonos speakers. Missing parameters come from the workspace defaults (`PATCH /v1/workspace/defaults`), including quiet hours (default `22-7`, in the workspace time zone): a play during quiet hours is not played, costs nothing and returns `200` with status `SKIPPED`. `preview: true` only produces the audio and returns its `audioUrl`. Every play is kept in the history (`GET /v1/plays`) and can be stopped while it runs.\n\nCredits: 1 when Sonos fetches from the CDN or the source (sound, clip, URL without processing), 2 when the audio goes through the API server (TTS, processed URL, file, talk), plus the voice rate per started 100 characters for TTS and 1 per started 10 s of speech for talk. A TTS cache hit (same text and voice within the workspace's audio cache time, `PATCH /v1/workspace/audio-cache`) costs 2, the preview skips the base fee. The balance after the play is in the `X-Quak-Credits` header.\n\n## Audio formats\n\nEverything Quak plays is mono, a Sonos room plays on one speaker (a stereo pair only on the left one), so mono uploads lose nothing.\n\n- **Uploads** (`POST /v1/play/file`, `POST /v1/play/talk`, `POST /v1/clips`): any common audio format, for example MP3, M4A/AAC, Opus (WebM or Ogg), WAV or FLAC, max. 10 MB and 180 s. Prefer a compressed format (MP3, M4A, Opus): a WAV of 180 s is about 15 MB mono and does not fit, an MP3 at 128 kbit/s is about 3 MB. For talk the browser's `MediaRecorder` output (WebM/Opus) or iOS M4A can be sent as is.\n\n- **URLs with processing** (`POST /v1/play/url`, default): like uploads, the server downloads and converts them.\n\n- **URLs without processing** (`process: false`): Sonos fetches the file itself, so it must be **MP3** (or WAV) on a public HTTPS URL. Use MP3: Sonos does not play WAV files shorter than about one second.\n\n- **What Sonos gets** from Quak is MP3 (128 kbit/s, 44.1 kHz, mono) for generated audio, sounds and clips.\n\n## Responses\n\nThe API can return these status codes across endpoints:\n\n- `200 OK`: request succeeded.\n\n- `201 Created`: a resource was created (for example an API key).\n\n- `202 Accepted`: request is valid but completion is still pending (for example login confirmation wait mode).\n\n- `204 No Content`: request succeeded and no response body is returned (typically delete endpoints).\n\n- `302 Found`: redirect response (for example Sonos connect with `redirect=1`).\n\n- `400 Bad Request`: invalid query/body/path parameters.\n\n- `401 Unauthorized`: API key missing, invalid or deleted (log in again), or an expired/invalid login verify token.\n\n- `402 Payment Required`: not enough credits for the play.\n\n- `403 Forbidden`: the API key is valid but may not do this.\n\n- `404 Not Found`: requested resource does not exist in your scope.\n\n- `409 Conflict`: uniqueness conflict (for example duplicate API key name) or a play that is not running any more.\n\n- `422 Unprocessable Content`: request body failed schema validation.\n\n- `424 Failed Dependency`: no speaker accepted the play (for example offline or gone), or Sonos did not let it stop.\n\n- `503 Service Unavailable`: a service behind Quak failed, for example Sonos or the speech synthesis. Quak never answers with 502 or 504.",
+    "description": "The Quak API plays announcements on Sonos speakers: text-to-speech, sounds, own clips, files, URLs and push-to-talk, with voice effects and ambiences, quiet hours and a live history.\n\n## Authentication\n\nTo get an API key:\n\n1. Call `POST /v1/user/signup` (new account) or `POST /v1/user/login` with your email address.\n\n2. Confirm the request via the email link.\n\n3. Exchange the `verifyToken` using `POST /v1/user/login/key` to receive your API key.\n\nUse the API key on protected endpoints with either:\n\n- Header: `Authorization: Bearer <API_KEY>` (raw token also works). Recommended.\n\n- Query parameter: `?apikey=<API_KEY>`, handy for demos and quick tests. A key in a URL can end up in logs, the browser history and referrers of the tools on the way, so use the header in integrations.\n\nAPI keys look like `qk_key_…` (43 characters). The full key is shown once, when it is made (`POST /v1/keys`, `POST /v1/user/login/key`); Quak only keeps a hash of it. Lists show its start (`qk_key_7Fh2…`).\n\n## Workspaces, roles and scopes\n\nA workspace holds the credits and subscription, the Sonos accounts and speakers, groups, clips, keys and the playback defaults (`GET /v1/workspace`). Every user gets a personal workspace at sign-up and can be a member of more (`GET /v1/workspaces`, invitations with `POST /v1/workspace/invites`); plays keep who triggered them.\n\nWhich workspace a request works in: a **login key** (from logging in with an app, the website or the CLI) belongs to you, not to a workspace. Name the workspace per request with the header `X-Quak-Workspace: <slug or id>`; without it the request works in the workspace you named last, else your personal one. Switching needs no new login. A key made with `POST /v1/keys` belongs to one workspace; a header naming another one is `403 ERROR_WORKSPACE_MISMATCH`. The workspace of a request is in the `X-Quak-Workspace-UUID` header of the answer.\n\nBoth have to allow a request: the key's **scope** and your **role** in the workspace. Scopes include the ones below: `play` (read speakers, voices, sounds, credits, history and play, costs credits) < `create` (and add clips: upload one or keep a play as one) < `manage` (and settings, Sonos accounts, keys, groups, renaming and deleting clips, members). Keys made with `POST /v1/keys` get `play` unless asked otherwise, login keys `manage`. Roles: `MEMBER` reads and plays (and adds clips); `ADMIN` also runs the workspace, several admins are equal. Changing the email and creating workspaces need a login key. Every endpoint names its scope; with too little the answer is `403 ERROR_INSUFFICIENT_SCOPE`, with a role too low `403 ERROR_INSUFFICIENT_ROLE`, both with the need in `details.required`.\n\n## Identifiers\n\n- `id`: stable UUID identifier exposed in public API payloads.\n\n- `slug`: human-friendly identifier on slug-enabled resources (for example Sonos accounts).\n\nFor slug-enabled resources, `/{id}` path params can accept either `id` or `slug`.\n\n## Playback\n\nPlay text (`POST /v1/play/text`), built-in sounds, own clips, URLs, uploaded files and what someone said into a mic (`POST /v1/play/talk` after release, `GET /v1/play/talk/live` as a WebSocket while talking) on your Sonos speakers. Missing parameters come from the workspace defaults (`PATCH /v1/workspace/defaults`), including quiet hours (default `22-7`, in the workspace time zone): a play during quiet hours is not played, costs nothing and returns `200` with status `SKIPPED`. `preview: true` only produces the audio and returns its `audioUrl`. Every play is kept in the history (`GET /v1/plays`) and can be stopped while it runs.\n\nCredits: 1 when Sonos fetches from the CDN or the source (sound, clip, URL without processing), 2 when the audio goes through the API server (TTS, processed URL, file, talk), plus the voice rate per started 100 characters for TTS and 1 per started 10 s of speech for talk. A TTS cache hit (same text and voice within the workspace's audio cache time, `PATCH /v1/workspace/audio-cache`) costs 2, the preview skips the base fee. The balance after the play is in the `X-Quak-Credits` header.\n\n## Audio formats\n\nEverything Quak plays is mono, a Sonos room plays on one speaker (a stereo pair only on the left one), so mono uploads lose nothing.\n\n- **Uploads** (`POST /v1/play/file`, `POST /v1/play/talk`, `POST /v1/clips`): any common audio format, for example MP3, M4A/AAC, Opus (WebM or Ogg), WAV or FLAC, max. 10 MB and 180 s. Prefer a compressed format (MP3, M4A, Opus): a WAV of 180 s is about 15 MB mono and does not fit, an MP3 at 128 kbit/s is about 3 MB. For talk the browser's `MediaRecorder` output (WebM/Opus) or iOS M4A can be sent as is.\n\n- **URLs with processing** (`POST /v1/play/url`, default): like uploads, the server downloads and converts them.\n\n- **URLs without processing** (`process: false`): Sonos fetches the file itself, so it must be **MP3** (or WAV) on a public HTTPS URL. Use MP3: Sonos does not play WAV files shorter than about one second.\n\n- **What Sonos gets** from Quak is MP3 (128 kbit/s, 44.1 kHz, mono) for generated audio, sounds and clips.\n\n## Responses\n\nThe API can return these status codes across endpoints:\n\n- `200 OK`: request succeeded.\n\n- `201 Created`: a resource was created (for example an API key).\n\n- `202 Accepted`: request is valid but completion is still pending (for example login confirmation wait mode).\n\n- `204 No Content`: request succeeded and no response body is returned (typically delete endpoints).\n\n- `302 Found`: redirect response (for example Sonos connect with `redirect=1`).\n\n- `400 Bad Request`: invalid query/body/path parameters.\n\n- `401 Unauthorized`: API key missing, invalid or deleted (log in again), or an expired/invalid login verify token.\n\n- `402 Payment Required`: not enough credits for the play.\n\n- `403 Forbidden`: the API key is valid but may not do this.\n\n- `404 Not Found`: requested resource does not exist in your scope.\n\n- `409 Conflict`: uniqueness conflict (for example duplicate API key name) or a play that is not running any more.\n\n- `422 Unprocessable Content`: request body failed schema validation.\n\n- `424 Failed Dependency`: no speaker accepted the play (for example offline or gone), or Sonos did not let it stop.\n\n- `503 Service Unavailable`: a service behind Quak failed, for example Sonos or the speech synthesis. Quak never answers with 502 or 504.",
     "version": "1.0.0",
     "contact": {
       "name": "Quak",
@@ -522,6 +522,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -977,6 +979,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -1072,6 +1076,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -1179,6 +1185,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -1412,6 +1420,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -1706,6 +1716,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -1814,6 +1826,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -1921,6 +1935,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -1992,7 +2008,7 @@
           "User"
         ],
         "summary": "List time zones",
-        "description": "Scope: `read`. Returns supported IANA time zones for user settings. If the user's current time zone is valid but not in the global list, it is included as well.",
+        "description": "Scope: `play`. Returns supported IANA time zones for user settings. If the user's current time zone is valid but not in the global list, it is included as well.",
         "responses": {
           "200": {
             "description": "Response for status 200",
@@ -2073,6 +2089,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -2372,6 +2390,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -2480,6 +2500,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -2587,6 +2609,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -2883,6 +2907,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -2991,6 +3017,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -3098,6 +3126,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -3403,6 +3433,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -3511,6 +3543,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -3618,6 +3652,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -3948,6 +3984,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -4055,6 +4093,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -4215,6 +4255,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -4323,6 +4365,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -4430,6 +4474,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -4569,6 +4615,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -4676,6 +4724,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -4786,6 +4836,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -4906,6 +4958,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -5013,6 +5067,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -5206,6 +5262,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -5313,6 +5371,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -5423,6 +5483,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -5499,7 +5561,7 @@
           "Workspace"
         ],
         "summary": "Get workspace",
-        "description": "Scope: `read`. The workspace of the API key (scope read): its credits and subscription, the playback defaults, the audio cache time and its time zone, in which quiet hours run. Everything played, the speakers, groups, clips and keys belong to it.",
+        "description": "Scope: `play`. The workspace of the API key (scope play): its credits and subscription, the playback defaults, the audio cache time and its time zone, in which quiet hours run. Everything played, the speakers, groups, clips and keys belong to it.",
         "responses": {
           "200": {
             "description": "Response for status 200",
@@ -5809,6 +5871,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -6325,6 +6389,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -6433,6 +6499,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -6540,6 +6608,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -6650,6 +6720,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -6830,6 +6902,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -6937,6 +7011,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -7047,6 +7123,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -8012,6 +8090,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -8120,6 +8200,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -8227,6 +8309,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -8337,6 +8421,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -8444,6 +8530,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -8917,6 +9005,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -9025,6 +9115,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -9132,6 +9224,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -9242,6 +9336,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -9313,7 +9409,7 @@
           "Workspace"
         ],
         "summary": "List members",
-        "description": "Scope: `read`. Everyone in the workspace with their role (scope read).",
+        "description": "Scope: `play`. Everyone in the workspace with their role (scope play).",
         "responses": {
           "200": {
             "description": "Response for status 200",
@@ -9477,6 +9573,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -9776,6 +9874,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -9884,6 +9984,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -9991,6 +10093,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -10101,6 +10205,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -10208,6 +10314,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -10342,6 +10450,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -10449,6 +10559,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -10559,6 +10671,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -10666,6 +10780,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -10987,6 +11103,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -11095,6 +11213,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -11202,6 +11322,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -11312,6 +11434,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -11496,6 +11620,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -11603,6 +11729,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -11742,6 +11870,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -11849,6 +11979,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -11959,6 +12091,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -12140,6 +12274,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -12247,6 +12383,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -12357,6 +12495,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -12464,6 +12604,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -12578,6 +12720,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -12637,7 +12781,7 @@
           "Workspace"
         ],
         "summary": "List workspaces",
-        "description": "Scope: `read`. The workspaces you are a member of (scope read). With a login key all of them; pick one per request with the header X-Quak-Workspace (slug or id). An own key (from POST /v1/keys) only sees its own workspace.",
+        "description": "Scope: `play`. The workspaces you are a member of (scope play). With a login key all of them; pick one per request with the header X-Quak-Workspace (slug or id). An own key (from POST /v1/keys) only sees its own workspace.",
         "responses": {
           "200": {
             "description": "Response for status 200",
@@ -12783,6 +12927,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -13242,6 +13388,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -13350,6 +13498,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -13457,6 +13607,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -13567,6 +13719,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -13645,7 +13799,7 @@
           "Speakers"
         ],
         "summary": "List speakers",
-        "description": "Scope: `read`. Everything a play can go to (`to`): all players, locations (a Sonos household each), rooms and groups, each with its players.",
+        "description": "Scope: `play`. Everything a play can go to (`to`): all players, locations (a Sonos household each), rooms and groups, each with its players.",
         "parameters": [
           {
             "name": "type",
@@ -14106,6 +14260,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -14214,6 +14370,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -14285,7 +14443,7 @@
           "Groups"
         ],
         "summary": "List groups",
-        "description": "Scope: `read`. Your groups of speakers with their players.",
+        "description": "Scope: `play`. Your groups of speakers with their players.",
         "responses": {
           "200": {
             "description": "Response for status 200",
@@ -14499,6 +14657,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -14980,6 +15140,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -15088,6 +15250,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -15195,6 +15359,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -15267,7 +15433,7 @@
           "Groups"
         ],
         "summary": "Show a group",
-        "description": "Scope: `read`. One group with its speakers and players.",
+        "description": "Scope: `play`. One group with its speakers and players.",
         "parameters": [
           {
             "name": "id",
@@ -15472,6 +15638,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -15579,6 +15747,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -16021,6 +16191,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -16129,6 +16301,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -16236,6 +16410,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -16344,6 +16520,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -16473,6 +16651,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -16580,6 +16760,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -16981,6 +17163,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -17089,6 +17273,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -17196,6 +17382,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -17587,6 +17775,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -17695,6 +17885,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -17802,6 +17994,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -17874,7 +18068,7 @@
           "Sounds"
         ],
         "summary": "List sounds",
-        "description": "Scope: `read`. Returns available sounds with a description of what you hear and search keywords. Filter with `q` and `tags`.",
+        "description": "Scope: `play`. Returns available sounds with a description of what you hear and search keywords. Filter with `q` and `tags`.",
         "parameters": [
           {
             "name": "q",
@@ -18107,6 +18301,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -18215,6 +18411,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -18286,7 +18484,7 @@
           "Sounds"
         ],
         "summary": "List sound tags",
-        "description": "Scope: `read`. Returns all available sound tags.",
+        "description": "Scope: `play`. Returns all available sound tags.",
         "responses": {
           "200": {
             "description": "Response for status 200",
@@ -18390,6 +18588,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -18461,7 +18661,7 @@
           "Voices"
         ],
         "summary": "List voices",
-        "description": "Scope: `read`. Returns the available voices of AWS Polly, Google (Chirp 3 HD and Gemini), OpenAI and ElevenLabs, see `provider` and `model`. Pass a voice `slug` as `voice` to POST /v1/play/text. Only current models are listed (see `GET /v1/voices/models`). Multi-language voices without a native language have `locale` and `language` `mul` and speak the language of the play (`language`, else the user language); other multi-language voices keep their native accent as `locale`.",
+        "description": "Scope: `play`. Returns the available voices of AWS Polly, Google (Chirp 3 HD and Gemini), OpenAI and ElevenLabs, see `provider` and `model`. Pass a voice `slug` as `voice` to POST /v1/play/text. Only current models are listed (see `GET /v1/voices/models`). Multi-language voices without a native language have `locale` and `language` `mul` and speak the language of the play (`language`, else the user language); other multi-language voices keep their native accent as `locale`.",
         "parameters": [
           {
             "name": "provider",
@@ -18687,6 +18887,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -18795,6 +18997,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -18902,6 +19106,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -18973,7 +19179,7 @@
           "Voices"
         ],
         "summary": "List voice locales",
-        "description": "Scope: `read`. Returns all available voice locales.",
+        "description": "Scope: `play`. Returns all available voice locales.",
         "parameters": [
           {
             "name": "language",
@@ -19089,6 +19295,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -19196,6 +19404,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -19267,7 +19477,7 @@
           "Voices"
         ],
         "summary": "List voice languages",
-        "description": "Scope: `read`. Returns all available voice languages.",
+        "description": "Scope: `play`. Returns all available voice languages.",
         "responses": {
           "200": {
             "description": "Response for status 200",
@@ -19364,6 +19574,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -19471,6 +19683,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -19542,7 +19756,7 @@
           "Voices"
         ],
         "summary": "List voice models",
-        "description": "Scope: `read`. Returns one entry per model with the number of voices, whether its voices speak several languages, the languages it supports (ISO 639 codes), its credit rate per started 100 characters (plus the base fee of a play) and its `status` (`ga` or `preview`) and `latency` (`fast`: first audio within ~300 ms, `normal`: within ~1.5 s, `slow`: may take a few seconds). For multi-language models `languages` lists every supported language, for the others the languages of their voices.",
+        "description": "Scope: `play`. Returns one entry per model with the number of voices, whether its voices speak several languages, the languages it supports (ISO 639 codes), its credit rate per started 100 characters (plus the base fee of a play) and its `status` (`ga` or `preview`) and `latency` (`fast`: first audio within ~300 ms, `normal`: within ~1.5 s, `slow`: may take a few seconds). For multi-language models `languages` lists every supported language, for the others the languages of their voices.",
         "responses": {
           "200": {
             "description": "Response for status 200",
@@ -19678,6 +19892,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -19785,6 +20001,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -19856,7 +20074,7 @@
           "Effects"
         ],
         "summary": "List effects and ambiences",
-        "description": "Scope: `read`. Beta, may change without notice. The voice effects (field effect) and ambiences (field ambience) of the play routes, in the order clients show them, with what they sound like and what each level does. One of each can be combined, e.g. robot in the stadium.",
+        "description": "Scope: `play`. Beta, may change without notice. The voice effects (field effect) and ambiences (field ambience) of the play routes, in the order clients show them, with what they sound like and what each level does. One of each can be combined, e.g. robot in the stadium.",
         "parameters": [
           {
             "name": "kind",
@@ -20061,6 +20279,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -20169,6 +20389,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -21513,6 +21735,14 @@
                             "version"
                           ]
                         },
+                        "canReplay": {
+                          "description": "whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing",
+                          "type": "boolean"
+                        },
+                        "canSave": {
+                          "description": "whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys)",
+                          "type": "boolean"
+                        },
                         "createdAt": {
                           "type": "string"
                         }
@@ -21531,6 +21761,8 @@
                         "fromCache",
                         "startsAt",
                         "client",
+                        "canReplay",
+                        "canSave",
                         "createdAt"
                       ]
                     }
@@ -21811,6 +22043,14 @@
                             "version"
                           ]
                         },
+                        "canReplay": {
+                          "description": "whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing",
+                          "type": "boolean"
+                        },
+                        "canSave": {
+                          "description": "whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys)",
+                          "type": "boolean"
+                        },
                         "createdAt": {
                           "type": "string"
                         }
@@ -21829,6 +22069,8 @@
                         "fromCache",
                         "startsAt",
                         "client",
+                        "canReplay",
+                        "canSave",
                         "createdAt"
                       ]
                     }
@@ -22119,6 +22361,14 @@
                             "version"
                           ]
                         },
+                        "canReplay": {
+                          "description": "whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing",
+                          "type": "boolean"
+                        },
+                        "canSave": {
+                          "description": "whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys)",
+                          "type": "boolean"
+                        },
                         "createdAt": {
                           "type": "string"
                         }
@@ -22137,6 +22387,8 @@
                         "fromCache",
                         "startsAt",
                         "client",
+                        "canReplay",
+                        "canSave",
                         "createdAt"
                       ]
                     }
@@ -22241,6 +22493,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -22349,6 +22603,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -22456,6 +22712,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -22563,6 +22821,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -22677,6 +22937,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -22790,6 +23052,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -23484,6 +23748,14 @@
                             "version"
                           ]
                         },
+                        "canReplay": {
+                          "description": "whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing",
+                          "type": "boolean"
+                        },
+                        "canSave": {
+                          "description": "whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys)",
+                          "type": "boolean"
+                        },
                         "createdAt": {
                           "type": "string"
                         }
@@ -23502,6 +23774,8 @@
                         "fromCache",
                         "startsAt",
                         "client",
+                        "canReplay",
+                        "canSave",
                         "createdAt"
                       ]
                     }
@@ -23778,6 +24052,14 @@
                             "version"
                           ]
                         },
+                        "canReplay": {
+                          "description": "whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing",
+                          "type": "boolean"
+                        },
+                        "canSave": {
+                          "description": "whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys)",
+                          "type": "boolean"
+                        },
                         "createdAt": {
                           "type": "string"
                         }
@@ -23796,6 +24078,8 @@
                         "fromCache",
                         "startsAt",
                         "client",
+                        "canReplay",
+                        "canSave",
                         "createdAt"
                       ]
                     }
@@ -24082,6 +24366,14 @@
                             "version"
                           ]
                         },
+                        "canReplay": {
+                          "description": "whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing",
+                          "type": "boolean"
+                        },
+                        "canSave": {
+                          "description": "whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys)",
+                          "type": "boolean"
+                        },
                         "createdAt": {
                           "type": "string"
                         }
@@ -24100,6 +24392,8 @@
                         "fromCache",
                         "startsAt",
                         "client",
+                        "canReplay",
+                        "canSave",
                         "createdAt"
                       ]
                     }
@@ -24200,6 +24494,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -24308,6 +24604,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -24415,6 +24713,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -24522,6 +24822,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -24636,6 +24938,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -24749,6 +25053,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -26056,6 +26362,14 @@
                             "version"
                           ]
                         },
+                        "canReplay": {
+                          "description": "whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing",
+                          "type": "boolean"
+                        },
+                        "canSave": {
+                          "description": "whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys)",
+                          "type": "boolean"
+                        },
                         "createdAt": {
                           "type": "string"
                         }
@@ -26074,6 +26388,8 @@
                         "fromCache",
                         "startsAt",
                         "client",
+                        "canReplay",
+                        "canSave",
                         "createdAt"
                       ]
                     }
@@ -26351,6 +26667,14 @@
                             "version"
                           ]
                         },
+                        "canReplay": {
+                          "description": "whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing",
+                          "type": "boolean"
+                        },
+                        "canSave": {
+                          "description": "whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys)",
+                          "type": "boolean"
+                        },
                         "createdAt": {
                           "type": "string"
                         }
@@ -26369,6 +26693,8 @@
                         "fromCache",
                         "startsAt",
                         "client",
+                        "canReplay",
+                        "canSave",
                         "createdAt"
                       ]
                     }
@@ -26656,6 +26982,14 @@
                             "version"
                           ]
                         },
+                        "canReplay": {
+                          "description": "whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing",
+                          "type": "boolean"
+                        },
+                        "canSave": {
+                          "description": "whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys)",
+                          "type": "boolean"
+                        },
                         "createdAt": {
                           "type": "string"
                         }
@@ -26674,6 +27008,8 @@
                         "fromCache",
                         "startsAt",
                         "client",
+                        "canReplay",
+                        "canSave",
                         "createdAt"
                       ]
                     }
@@ -26775,6 +27111,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -26883,6 +27221,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -26990,6 +27330,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -27097,6 +27439,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -27211,6 +27555,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -27324,6 +27670,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -28611,6 +28959,14 @@
                             "version"
                           ]
                         },
+                        "canReplay": {
+                          "description": "whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing",
+                          "type": "boolean"
+                        },
+                        "canSave": {
+                          "description": "whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys)",
+                          "type": "boolean"
+                        },
                         "createdAt": {
                           "type": "string"
                         }
@@ -28629,6 +28985,8 @@
                         "fromCache",
                         "startsAt",
                         "client",
+                        "canReplay",
+                        "canSave",
                         "createdAt"
                       ]
                     }
@@ -28906,6 +29264,14 @@
                             "version"
                           ]
                         },
+                        "canReplay": {
+                          "description": "whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing",
+                          "type": "boolean"
+                        },
+                        "canSave": {
+                          "description": "whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys)",
+                          "type": "boolean"
+                        },
                         "createdAt": {
                           "type": "string"
                         }
@@ -28924,6 +29290,8 @@
                         "fromCache",
                         "startsAt",
                         "client",
+                        "canReplay",
+                        "canSave",
                         "createdAt"
                       ]
                     }
@@ -29211,6 +29579,14 @@
                             "version"
                           ]
                         },
+                        "canReplay": {
+                          "description": "whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing",
+                          "type": "boolean"
+                        },
+                        "canSave": {
+                          "description": "whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys)",
+                          "type": "boolean"
+                        },
                         "createdAt": {
                           "type": "string"
                         }
@@ -29229,6 +29605,8 @@
                         "fromCache",
                         "startsAt",
                         "client",
+                        "canReplay",
+                        "canSave",
                         "createdAt"
                       ]
                     }
@@ -29330,6 +29708,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -29438,6 +29818,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -29545,6 +29927,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -29652,6 +30036,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -29766,6 +30152,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -29879,6 +30267,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -30502,6 +30892,14 @@
                             "version"
                           ]
                         },
+                        "canReplay": {
+                          "description": "whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing",
+                          "type": "boolean"
+                        },
+                        "canSave": {
+                          "description": "whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys)",
+                          "type": "boolean"
+                        },
                         "createdAt": {
                           "type": "string"
                         }
@@ -30520,6 +30918,8 @@
                         "fromCache",
                         "startsAt",
                         "client",
+                        "canReplay",
+                        "canSave",
                         "createdAt"
                       ]
                     }
@@ -30796,6 +31196,14 @@
                             "version"
                           ]
                         },
+                        "canReplay": {
+                          "description": "whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing",
+                          "type": "boolean"
+                        },
+                        "canSave": {
+                          "description": "whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys)",
+                          "type": "boolean"
+                        },
                         "createdAt": {
                           "type": "string"
                         }
@@ -30814,6 +31222,8 @@
                         "fromCache",
                         "startsAt",
                         "client",
+                        "canReplay",
+                        "canSave",
                         "createdAt"
                       ]
                     }
@@ -31100,6 +31510,14 @@
                             "version"
                           ]
                         },
+                        "canReplay": {
+                          "description": "whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing",
+                          "type": "boolean"
+                        },
+                        "canSave": {
+                          "description": "whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys)",
+                          "type": "boolean"
+                        },
                         "createdAt": {
                           "type": "string"
                         }
@@ -31118,6 +31536,8 @@
                         "fromCache",
                         "startsAt",
                         "client",
+                        "canReplay",
+                        "canSave",
                         "createdAt"
                       ]
                     }
@@ -31218,6 +31638,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -31326,6 +31748,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -31433,6 +31857,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -31540,6 +31966,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -31654,6 +32082,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -31767,6 +32197,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -33060,6 +33492,14 @@
                             "version"
                           ]
                         },
+                        "canReplay": {
+                          "description": "whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing",
+                          "type": "boolean"
+                        },
+                        "canSave": {
+                          "description": "whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys)",
+                          "type": "boolean"
+                        },
                         "createdAt": {
                           "type": "string"
                         }
@@ -33078,6 +33518,8 @@
                         "fromCache",
                         "startsAt",
                         "client",
+                        "canReplay",
+                        "canSave",
                         "createdAt"
                       ]
                     }
@@ -33354,6 +33796,14 @@
                             "version"
                           ]
                         },
+                        "canReplay": {
+                          "description": "whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing",
+                          "type": "boolean"
+                        },
+                        "canSave": {
+                          "description": "whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys)",
+                          "type": "boolean"
+                        },
                         "createdAt": {
                           "type": "string"
                         }
@@ -33372,6 +33822,8 @@
                         "fromCache",
                         "startsAt",
                         "client",
+                        "canReplay",
+                        "canSave",
                         "createdAt"
                       ]
                     }
@@ -33658,6 +34110,14 @@
                             "version"
                           ]
                         },
+                        "canReplay": {
+                          "description": "whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing",
+                          "type": "boolean"
+                        },
+                        "canSave": {
+                          "description": "whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys)",
+                          "type": "boolean"
+                        },
                         "createdAt": {
                           "type": "string"
                         }
@@ -33676,6 +34136,8 @@
                         "fromCache",
                         "startsAt",
                         "client",
+                        "canReplay",
+                        "canSave",
                         "createdAt"
                       ]
                     }
@@ -33776,6 +34238,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -33884,6 +34348,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -33991,6 +34457,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -34098,6 +34566,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -34212,6 +34682,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -34325,6 +34797,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -34685,6 +35159,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -34793,6 +35269,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -34900,6 +35378,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -35001,7 +35481,7 @@
           "Plays"
         ],
         "summary": "List plays",
-        "description": "Scope: `read`. Returns the history of plays, newest first, including previews and plays skipped by quiet hours. type, platform and scope narrow it, scope=key shows only the plays of this API key.",
+        "description": "Scope: `play`. Returns the history of plays, newest first, including previews and plays skipped by quiet hours. type, platform and scope narrow it, scope=key shows only the plays of this API key.",
         "parameters": [
           {
             "name": "limit",
@@ -35299,6 +35779,14 @@
                               "version"
                             ]
                           },
+                          "canReplay": {
+                            "description": "whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing",
+                            "type": "boolean"
+                          },
+                          "canSave": {
+                            "description": "whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys)",
+                            "type": "boolean"
+                          },
                           "createdAt": {
                             "type": "string"
                           }
@@ -35317,6 +35805,8 @@
                           "fromCache",
                           "startsAt",
                           "client",
+                          "canReplay",
+                          "canSave",
                           "createdAt"
                         ]
                       }
@@ -35464,6 +35954,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -35572,6 +36064,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -35643,7 +36137,7 @@
           "Plays"
         ],
         "summary": "Show a play",
-        "description": "Scope: `read`. Returns one play with its status per speaker. \"last\" returns your newest play without listing the history.",
+        "description": "Scope: `play`. Returns one play with its status per speaker. \"last\" returns your newest play without listing the history.",
         "parameters": [
           {
             "name": "uuid",
@@ -35920,6 +36414,14 @@
                             "version"
                           ]
                         },
+                        "canReplay": {
+                          "description": "whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing",
+                          "type": "boolean"
+                        },
+                        "canSave": {
+                          "description": "whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys)",
+                          "type": "boolean"
+                        },
                         "createdAt": {
                           "type": "string"
                         }
@@ -35938,6 +36440,8 @@
                         "fromCache",
                         "startsAt",
                         "client",
+                        "canReplay",
+                        "canSave",
                         "createdAt"
                       ]
                     }
@@ -36052,6 +36556,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -36159,6 +36665,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -36507,6 +37015,14 @@
                             "version"
                           ]
                         },
+                        "canReplay": {
+                          "description": "whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing",
+                          "type": "boolean"
+                        },
+                        "canSave": {
+                          "description": "whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys)",
+                          "type": "boolean"
+                        },
                         "createdAt": {
                           "type": "string"
                         }
@@ -36525,6 +37041,8 @@
                         "fromCache",
                         "startsAt",
                         "client",
+                        "canReplay",
+                        "canSave",
                         "createdAt"
                       ]
                     }
@@ -36639,6 +37157,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -36746,6 +37266,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -36853,6 +37375,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -36924,7 +37448,7 @@
           "Plays"
         ],
         "summary": "Save a play as a clip",
-        "description": "Scope: `play`. Keeps the audio of a play as one of your clips, exactly as it played (intro, outro and effect included), to play it again with POST /v1/play/clip or use it as intro or outro. Works for text, talk, file and processed URL plays and for sounds and clips played with processing (process: true, e.g. with intro, outro or an effect), also previews, as long as their audio is still there (the audio cache time, at least 5 minutes after the play). Costs 2 credits, like uploading a clip. A sound or clip without processing is already in the library: 400 ERROR_UNABLE_TO_SAVE.",
+        "description": "Scope: `create`. Keeps the audio of a play as one of your clips, exactly as it played (intro, outro and effect included), to play it again with POST /v1/play/clip or use it as intro or outro. Works for text, talk, file and processed URL plays and for sounds and clips played with processing (process: true, e.g. with intro, outro or an effect), also previews, as long as their audio is still there (the audio cache time, at least 5 minutes after the play). Costs 2 credits and needs a key with scope create, like uploading a clip (both create a lasting clip). A sound or clip without processing is already in the library: 400 ERROR_UNABLE_TO_SAVE.",
         "parameters": [
           {
             "name": "uuid",
@@ -37202,6 +37726,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -37310,6 +37836,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -37417,6 +37945,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -37524,6 +38054,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -37631,6 +38163,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -38459,6 +38993,14 @@
                             "version"
                           ]
                         },
+                        "canReplay": {
+                          "description": "whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing",
+                          "type": "boolean"
+                        },
+                        "canSave": {
+                          "description": "whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys)",
+                          "type": "boolean"
+                        },
                         "createdAt": {
                           "type": "string"
                         }
@@ -38477,6 +39019,8 @@
                         "fromCache",
                         "startsAt",
                         "client",
+                        "canReplay",
+                        "canSave",
                         "createdAt"
                       ]
                     }
@@ -38757,6 +39301,14 @@
                             "version"
                           ]
                         },
+                        "canReplay": {
+                          "description": "whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing",
+                          "type": "boolean"
+                        },
+                        "canSave": {
+                          "description": "whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys)",
+                          "type": "boolean"
+                        },
                         "createdAt": {
                           "type": "string"
                         }
@@ -38775,6 +39327,8 @@
                         "fromCache",
                         "startsAt",
                         "client",
+                        "canReplay",
+                        "canSave",
                         "createdAt"
                       ]
                     }
@@ -39065,6 +39619,14 @@
                             "version"
                           ]
                         },
+                        "canReplay": {
+                          "description": "whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing",
+                          "type": "boolean"
+                        },
+                        "canSave": {
+                          "description": "whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys)",
+                          "type": "boolean"
+                        },
                         "createdAt": {
                           "type": "string"
                         }
@@ -39083,6 +39645,8 @@
                         "fromCache",
                         "startsAt",
                         "client",
+                        "canReplay",
+                        "canSave",
                         "createdAt"
                       ]
                     }
@@ -39187,6 +39751,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -39295,6 +39861,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -39402,6 +39970,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -39509,6 +40079,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -39616,6 +40188,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -39724,6 +40298,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -39801,7 +40377,7 @@
           "Clips"
         ],
         "summary": "List clips",
-        "description": "Scope: `read`. Returns your own clips, sorted by name. Play them with POST /v1/play/clip.",
+        "description": "Scope: `play`. Returns your own clips, sorted by name. Play them with POST /v1/play/clip.",
         "responses": {
           "200": {
             "description": "Response for status 200",
@@ -39939,6 +40515,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -40008,7 +40586,7 @@
           "Clips"
         ],
         "summary": "Create a clip",
-        "description": "Scope: `manage`. Uploads an own clip (multipart/form-data: file, optional name and slug; max. 10 MB and 180 s, any common audio format). It is converted to MP3 once and then played from the CDN like a sound, or used as intro or outro with clip:<slug>. Creating a clip costs 2 credits (402 when there are not enough), the balance is in X-Quak-Credits.",
+        "description": "Scope: `create`. Uploads an own clip (multipart/form-data: file, optional name and slug; max. 10 MB and 180 s, any common audio format). It is converted to MP3 once and then played from the CDN like a sound, or used as intro or outro with clip:<slug>. Creating a clip costs 2 credits (402 when there are not enough), the balance is in X-Quak-Credits.",
         "requestBody": {
           "required": true,
           "content": {
@@ -40184,6 +40762,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -40292,6 +40872,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -40399,6 +40981,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -40506,6 +41090,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -40801,6 +41387,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -40909,6 +41497,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -41016,6 +41606,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -41123,6 +41715,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -41251,6 +41845,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -41358,6 +41954,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -41505,8 +42103,8 @@
                           "scope": {
                             "type": "string",
                             "enum": [
-                              "read",
                               "play",
+                              "create",
                               "manage"
                             ]
                           },
@@ -41668,6 +42266,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -41776,6 +42376,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -41883,6 +42485,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -41974,7 +42578,7 @@
                     "type": "string"
                   },
                   "scope": {
-                    "description": "read, play (default) or manage, never more than the key that makes the request",
+                    "description": "play (default), create or manage, never more than the key that makes the request",
                     "examples": [
                       "play"
                     ],
@@ -41990,10 +42594,10 @@
                   }
                 },
                 "medium": {
-                  "summary": "Medium: a read-only key",
+                  "summary": "Medium: a key that may also add clips",
                   "value": {
-                    "name": "Dashboard",
-                    "scope": "read"
+                    "name": "Home Assistant",
+                    "scope": "create"
                   }
                 },
                 "full": {
@@ -42021,7 +42625,7 @@
                     "type": "string"
                   },
                   "scope": {
-                    "description": "read, play (default) or manage, never more than the key that makes the request",
+                    "description": "play (default), create or manage, never more than the key that makes the request",
                     "examples": [
                       "play"
                     ],
@@ -42037,10 +42641,10 @@
                   }
                 },
                 "medium": {
-                  "summary": "Medium: a read-only key",
+                  "summary": "Medium: a key that may also add clips",
                   "value": {
-                    "name": "Dashboard",
-                    "scope": "read"
+                    "name": "Home Assistant",
+                    "scope": "create"
                   }
                 },
                 "full": {
@@ -42068,7 +42672,7 @@
                     "type": "string"
                   },
                   "scope": {
-                    "description": "read, play (default) or manage, never more than the key that makes the request",
+                    "description": "play (default), create or manage, never more than the key that makes the request",
                     "examples": [
                       "play"
                     ],
@@ -42084,10 +42688,10 @@
                   }
                 },
                 "medium": {
-                  "summary": "Medium: a read-only key",
+                  "summary": "Medium: a key that may also add clips",
                   "value": {
-                    "name": "Dashboard",
-                    "scope": "read"
+                    "name": "Home Assistant",
+                    "scope": "create"
                   }
                 },
                 "full": {
@@ -42145,8 +42749,8 @@
                         "scope": {
                           "type": "string",
                           "enum": [
-                            "read",
                             "play",
+                            "create",
                             "manage"
                           ]
                         },
@@ -42284,6 +42888,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -42392,6 +42998,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -42499,6 +43107,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -42607,6 +43217,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -42714,11 +43326,11 @@
                   },
                   "scope": {
                     "enum": [
-                      "read",
                       "play",
+                      "create",
                       "manage"
                     ],
-                    "description": "read, play or manage, at most the scope of the requesting key",
+                    "description": "play, create or manage, at most the scope of the requesting key",
                     "type": "string"
                   }
                 }
@@ -42731,9 +43343,9 @@
                   }
                 },
                 "medium": {
-                  "summary": "Medium: only reading from now on",
+                  "summary": "Medium: only playing from now on",
                   "value": {
-                    "scope": "read"
+                    "scope": "play"
                   }
                 },
                 "full": {
@@ -42763,11 +43375,11 @@
                   },
                   "scope": {
                     "enum": [
-                      "read",
                       "play",
+                      "create",
                       "manage"
                     ],
-                    "description": "read, play or manage, at most the scope of the requesting key",
+                    "description": "play, create or manage, at most the scope of the requesting key",
                     "type": "string"
                   }
                 }
@@ -42780,9 +43392,9 @@
                   }
                 },
                 "medium": {
-                  "summary": "Medium: only reading from now on",
+                  "summary": "Medium: only playing from now on",
                   "value": {
-                    "scope": "read"
+                    "scope": "play"
                   }
                 },
                 "full": {
@@ -42812,11 +43424,11 @@
                   },
                   "scope": {
                     "enum": [
-                      "read",
                       "play",
+                      "create",
                       "manage"
                     ],
-                    "description": "read, play or manage, at most the scope of the requesting key",
+                    "description": "play, create or manage, at most the scope of the requesting key",
                     "type": "string"
                   }
                 }
@@ -42829,9 +43441,9 @@
                   }
                 },
                 "medium": {
-                  "summary": "Medium: only reading from now on",
+                  "summary": "Medium: only playing from now on",
                   "value": {
-                    "scope": "read"
+                    "scope": "play"
                   }
                 },
                 "full": {
@@ -42889,8 +43501,8 @@
                         "scope": {
                           "type": "string",
                           "enum": [
-                            "read",
                             "play",
+                            "create",
                             "manage"
                           ]
                         },
@@ -43019,6 +43631,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -43127,6 +43741,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -43234,6 +43850,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -43344,6 +43962,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -43452,6 +44072,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -43592,6 +44214,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -43699,6 +44323,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -43809,6 +44435,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -43936,6 +44564,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -44007,7 +44637,7 @@
           "Sonos"
         ],
         "summary": "List accounts",
-        "description": "Scope: `read`. Returns all connected Sonos accounts for the authenticated user.",
+        "description": "Scope: `play`. Returns all connected Sonos accounts for the authenticated user.",
         "parameters": [
           {
             "name": "limit",
@@ -44232,6 +44862,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -44340,6 +44972,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -44575,6 +45209,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -44682,6 +45318,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -44857,6 +45495,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -45246,6 +45886,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -45354,6 +45996,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -45461,6 +46105,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -45569,6 +46215,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -45710,6 +46358,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -45817,6 +46467,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -45888,7 +46540,7 @@
           "Integrations"
         ],
         "summary": "List integrations",
-        "description": "Scope: `read`. Every integration of Quak with its state in this workspace (scope read), also the ones not connected. Hide providers with `available: false`, this server is not set up for them. Sonos is not in here, see /v1/sonos.",
+        "description": "Scope: `play`. Every integration of Quak with its state in this workspace (scope play), also the ones not connected. Hide providers with `available: false`, this server is not set up for them. Sonos is not in here, see /v1/sonos.",
         "responses": {
           "200": {
             "description": "Response for status 200",
@@ -46028,6 +46680,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -46277,6 +46931,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -46385,6 +47041,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -46492,6 +47150,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -46602,6 +47262,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -46709,6 +47371,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -46823,6 +47487,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -46965,6 +47631,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -47072,6 +47740,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -47182,6 +47852,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -47253,7 +47925,7 @@
           "Play"
         ],
         "summary": "WebSocket ticket",
-        "description": "Scope: `read`. A one-time ticket for talk live or the live status, for a browser that should not see the API key: your server gets the ticket with its key and hands it to the browser, which sends \"ticket\" instead of \"apiKey\". Valid for 60 s and once, for the purpose and the workspace of this request (X-Quak-Workspace). talk-live needs scope play, watch scope read.",
+        "description": "Scope: `play`. A one-time ticket for talk live or the live status, for a browser that should not see the API key: your server gets the ticket with its key and hands it to the browser, which sends \"ticket\" instead of \"apiKey\". Valid for 60 s and once, for the purpose and the workspace of this request (X-Quak-Workspace). talk-live and watch need scope play.",
         "requestBody": {
           "required": true,
           "content": {
@@ -47433,6 +48105,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -47541,6 +48215,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -47648,6 +48324,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -47818,6 +48496,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -47925,6 +48605,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -48083,8 +48765,8 @@
                         "scope": {
                           "type": "string",
                           "enum": [
-                            "read",
-                            "play"
+                            "play",
+                            "create"
                           ]
                         },
                         "expiresAt": {
@@ -48154,6 +48836,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -48261,6 +48945,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -48371,6 +49057,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -48566,6 +49254,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -48673,6 +49363,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -48783,6 +49475,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -48940,6 +49634,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -49047,6 +49743,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
@@ -49157,6 +49855,8 @@
                             "ERROR_NOT_FOUND",
                             "ERROR_NOT_REPLAYABLE",
                             "ERROR_NOT_VOTABLE",
+                            "ERROR_NO_TESTERS",
+                            "ERROR_NOT_VOTED",
                             "ERROR_NO_PERMISSIONS",
                             "ERROR_OAUTH_CANCELED",
                             "ERROR_PLAY_NOT_ACTIVE",
