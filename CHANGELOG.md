@@ -4,6 +4,8 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+## 0.9.3 - 2026-09-30
+
 - OpenAPI snapshot updated: new limits (text 1,000 characters, talk and talk live 180 s, file, processed url and clips
   180 s with 10 MB uploads), `limits` on the workspace (`GET /v1/workspace` on the raw client)
 - OpenAPI snapshot updated: upload tickets (`POST /v1/upload-tickets`, a single-use `qk_upt_…` key for browser uploads,
