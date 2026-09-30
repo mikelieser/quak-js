@@ -40,7 +40,7 @@ export function play(): Play {
     startsAt: null,
     canReplay: false,
     canSave: false,
-    client: { platform: "API", name: "js", version: "0.9.0" },
+    client: { platform: "JS", name: "js", version: "0.9.0" },
     createdAt: "2026-09-29T10:00:00.000Z",
   };
 }

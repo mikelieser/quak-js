@@ -205,7 +205,10 @@ export class Quak {
     };
   }
 
-  /** Stop whatever plays on the speakers in `to`, also clips of other apps (`POST /v1/play/stop`). */
+  /**
+   * Stop whatever plays on the speakers in `to`, also clips of other apps; without `to` on all speakers
+   * (`POST /v1/play/stop`).
+   */
   stop(params: StopParams = {}): Promise<StopResponse> {
     return unwrap(this.api.POST("/v1/play/stop", { body: params }));
   }

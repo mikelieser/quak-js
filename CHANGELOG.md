@@ -6,6 +6,9 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 - OpenAPI snapshot updated, **breaking in the API:** key scopes are `play` < `create` < `manage`, `read` is gone;
   uploading and saving clips needs `create`. The lookups need `play`
+- `quak.stop()` without `to` stops all speakers (API change, the client already sent no `to`)
+- Platform `JS` for plays made through this package (was `API_JS`), new platforms `MACOS`, `IOS`, `IPADOS`, `RAYCAST`,
+  `HOME_ASSISTANT`
 - Plays carry `canReplay` and `canSave`; new error codes `ERROR_NO_TESTERS` and `ERROR_NOT_VOTED`
 
 ## 0.9.3 - 2026-09-30

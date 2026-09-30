@@ -857,7 +857,7 @@ export interface paths {
         put?: never;
         /**
          * Stop the speakers
-         * @description Scope: `play`. Stops whatever plays on the speakers in to, also clips of other apps and clips with high priority: a short silent HIGH clip replaces the running one. Plays without priority are refused as busy for about a second afterwards (0.5-0.9 s measured), so wait a moment before the next one. Free, not part of the history. To stop one play, use POST /v1/plays/:uuid/stop.
+         * @description Scope: `play`. Stops whatever plays on the speakers in to, on all speakers of the workspace without to (not only the default speakers), also clips of other apps and clips with high priority: a short silent HIGH clip replaces the running one. Plays without priority are refused as busy for about a second afterwards (0.5-0.9 s measured), so wait a moment before the next one. Free, not part of the history. To stop one play, use POST /v1/plays/:uuid/stop.
          */
         post: operations["postV1PlayStop"];
         delete?: never;
@@ -7117,10 +7117,10 @@ export interface operations {
                             /** @description who sent the play */
                             client: {
                                 /**
-                                 * @description platform of the API key (e.g. CLI, WEB)
+                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "API_JS" | "WEB" | "CLI" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -7188,10 +7188,10 @@ export interface operations {
                             /** @description who sent the play */
                             client: {
                                 /**
-                                 * @description platform of the API key (e.g. CLI, WEB)
+                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "API_JS" | "WEB" | "CLI" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -7259,10 +7259,10 @@ export interface operations {
                             /** @description who sent the play */
                             client: {
                                 /**
-                                 * @description platform of the API key (e.g. CLI, WEB)
+                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "API_JS" | "WEB" | "CLI" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -7595,10 +7595,10 @@ export interface operations {
                             /** @description who sent the play */
                             client: {
                                 /**
-                                 * @description platform of the API key (e.g. CLI, WEB)
+                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "API_JS" | "WEB" | "CLI" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -7666,10 +7666,10 @@ export interface operations {
                             /** @description who sent the play */
                             client: {
                                 /**
-                                 * @description platform of the API key (e.g. CLI, WEB)
+                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "API_JS" | "WEB" | "CLI" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -7737,10 +7737,10 @@ export interface operations {
                             /** @description who sent the play */
                             client: {
                                 /**
-                                 * @description platform of the API key (e.g. CLI, WEB)
+                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "API_JS" | "WEB" | "CLI" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -8284,10 +8284,10 @@ export interface operations {
                             /** @description who sent the play */
                             client: {
                                 /**
-                                 * @description platform of the API key (e.g. CLI, WEB)
+                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "API_JS" | "WEB" | "CLI" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -8355,10 +8355,10 @@ export interface operations {
                             /** @description who sent the play */
                             client: {
                                 /**
-                                 * @description platform of the API key (e.g. CLI, WEB)
+                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "API_JS" | "WEB" | "CLI" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -8426,10 +8426,10 @@ export interface operations {
                             /** @description who sent the play */
                             client: {
                                 /**
-                                 * @description platform of the API key (e.g. CLI, WEB)
+                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "API_JS" | "WEB" | "CLI" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -8955,10 +8955,10 @@ export interface operations {
                             /** @description who sent the play */
                             client: {
                                 /**
-                                 * @description platform of the API key (e.g. CLI, WEB)
+                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "API_JS" | "WEB" | "CLI" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -9026,10 +9026,10 @@ export interface operations {
                             /** @description who sent the play */
                             client: {
                                 /**
-                                 * @description platform of the API key (e.g. CLI, WEB)
+                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "API_JS" | "WEB" | "CLI" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -9097,10 +9097,10 @@ export interface operations {
                             /** @description who sent the play */
                             client: {
                                 /**
-                                 * @description platform of the API key (e.g. CLI, WEB)
+                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "API_JS" | "WEB" | "CLI" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -9419,10 +9419,10 @@ export interface operations {
                             /** @description who sent the play */
                             client: {
                                 /**
-                                 * @description platform of the API key (e.g. CLI, WEB)
+                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "API_JS" | "WEB" | "CLI" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -9490,10 +9490,10 @@ export interface operations {
                             /** @description who sent the play */
                             client: {
                                 /**
-                                 * @description platform of the API key (e.g. CLI, WEB)
+                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "API_JS" | "WEB" | "CLI" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -9561,10 +9561,10 @@ export interface operations {
                             /** @description who sent the play */
                             client: {
                                 /**
-                                 * @description platform of the API key (e.g. CLI, WEB)
+                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "API_JS" | "WEB" | "CLI" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -10093,10 +10093,10 @@ export interface operations {
                             /** @description who sent the play */
                             client: {
                                 /**
-                                 * @description platform of the API key (e.g. CLI, WEB)
+                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "API_JS" | "WEB" | "CLI" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -10164,10 +10164,10 @@ export interface operations {
                             /** @description who sent the play */
                             client: {
                                 /**
-                                 * @description platform of the API key (e.g. CLI, WEB)
+                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "API_JS" | "WEB" | "CLI" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -10235,10 +10235,10 @@ export interface operations {
                             /** @description who sent the play */
                             client: {
                                 /**
-                                 * @description platform of the API key (e.g. CLI, WEB)
+                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "API_JS" | "WEB" | "CLI" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -10610,10 +10610,10 @@ export interface operations {
                             /** @description who sent the play */
                             client: {
                                 /**
-                                 * @description platform of the API key (e.g. CLI, WEB)
+                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "API_JS" | "WEB" | "CLI" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -10748,10 +10748,10 @@ export interface operations {
                             /** @description who sent the play */
                             client: {
                                 /**
-                                 * @description platform of the API key (e.g. CLI, WEB)
+                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "API_JS" | "WEB" | "CLI" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -10880,10 +10880,10 @@ export interface operations {
                             /** @description who sent the play */
                             client: {
                                 /**
-                                 * @description platform of the API key (e.g. CLI, WEB)
+                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "API_JS" | "WEB" | "CLI" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -11339,10 +11339,10 @@ export interface operations {
                             /** @description who sent the play */
                             client: {
                                 /**
-                                 * @description platform of the API key (e.g. CLI, WEB)
+                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "API_JS" | "WEB" | "CLI" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -11410,10 +11410,10 @@ export interface operations {
                             /** @description who sent the play */
                             client: {
                                 /**
-                                 * @description platform of the API key (e.g. CLI, WEB)
+                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "API_JS" | "WEB" | "CLI" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -11481,10 +11481,10 @@ export interface operations {
                             /** @description who sent the play */
                             client: {
                                 /**
-                                 * @description platform of the API key (e.g. CLI, WEB)
+                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "API_JS" | "WEB" | "CLI" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */

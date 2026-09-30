@@ -21695,15 +21695,20 @@
                             "platform": {
                               "enum": [
                                 "API",
-                                "API_JS",
+                                "JS",
                                 "WEB",
                                 "CLI",
+                                "MACOS",
+                                "IOS",
+                                "IPADOS",
+                                "RAYCAST",
+                                "HOME_ASSISTANT",
                                 "SLACK",
                                 "ZAPIER",
                                 "IFTTT",
                                 "MCP"
                               ],
-                              "description": "platform of the API key (e.g. CLI, WEB)",
+                              "description": "where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side",
                               "type": "string"
                             },
                             "name": {
@@ -22003,15 +22008,20 @@
                             "platform": {
                               "enum": [
                                 "API",
-                                "API_JS",
+                                "JS",
                                 "WEB",
                                 "CLI",
+                                "MACOS",
+                                "IOS",
+                                "IPADOS",
+                                "RAYCAST",
+                                "HOME_ASSISTANT",
                                 "SLACK",
                                 "ZAPIER",
                                 "IFTTT",
                                 "MCP"
                               ],
-                              "description": "platform of the API key (e.g. CLI, WEB)",
+                              "description": "where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side",
                               "type": "string"
                             },
                             "name": {
@@ -22321,15 +22331,20 @@
                             "platform": {
                               "enum": [
                                 "API",
-                                "API_JS",
+                                "JS",
                                 "WEB",
                                 "CLI",
+                                "MACOS",
+                                "IOS",
+                                "IPADOS",
+                                "RAYCAST",
+                                "HOME_ASSISTANT",
                                 "SLACK",
                                 "ZAPIER",
                                 "IFTTT",
                                 "MCP"
                               ],
-                              "description": "platform of the API key (e.g. CLI, WEB)",
+                              "description": "where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side",
                               "type": "string"
                             },
                             "name": {
@@ -23708,15 +23723,20 @@
                             "platform": {
                               "enum": [
                                 "API",
-                                "API_JS",
+                                "JS",
                                 "WEB",
                                 "CLI",
+                                "MACOS",
+                                "IOS",
+                                "IPADOS",
+                                "RAYCAST",
+                                "HOME_ASSISTANT",
                                 "SLACK",
                                 "ZAPIER",
                                 "IFTTT",
                                 "MCP"
                               ],
-                              "description": "platform of the API key (e.g. CLI, WEB)",
+                              "description": "where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side",
                               "type": "string"
                             },
                             "name": {
@@ -24012,15 +24032,20 @@
                             "platform": {
                               "enum": [
                                 "API",
-                                "API_JS",
+                                "JS",
                                 "WEB",
                                 "CLI",
+                                "MACOS",
+                                "IOS",
+                                "IPADOS",
+                                "RAYCAST",
+                                "HOME_ASSISTANT",
                                 "SLACK",
                                 "ZAPIER",
                                 "IFTTT",
                                 "MCP"
                               ],
-                              "description": "platform of the API key (e.g. CLI, WEB)",
+                              "description": "where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side",
                               "type": "string"
                             },
                             "name": {
@@ -24326,15 +24351,20 @@
                             "platform": {
                               "enum": [
                                 "API",
-                                "API_JS",
+                                "JS",
                                 "WEB",
                                 "CLI",
+                                "MACOS",
+                                "IOS",
+                                "IPADOS",
+                                "RAYCAST",
+                                "HOME_ASSISTANT",
                                 "SLACK",
                                 "ZAPIER",
                                 "IFTTT",
                                 "MCP"
                               ],
-                              "description": "platform of the API key (e.g. CLI, WEB)",
+                              "description": "where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side",
                               "type": "string"
                             },
                             "name": {
@@ -26322,15 +26352,20 @@
                             "platform": {
                               "enum": [
                                 "API",
-                                "API_JS",
+                                "JS",
                                 "WEB",
                                 "CLI",
+                                "MACOS",
+                                "IOS",
+                                "IPADOS",
+                                "RAYCAST",
+                                "HOME_ASSISTANT",
                                 "SLACK",
                                 "ZAPIER",
                                 "IFTTT",
                                 "MCP"
                               ],
-                              "description": "platform of the API key (e.g. CLI, WEB)",
+                              "description": "where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side",
                               "type": "string"
                             },
                             "name": {
@@ -26627,15 +26662,20 @@
                             "platform": {
                               "enum": [
                                 "API",
-                                "API_JS",
+                                "JS",
                                 "WEB",
                                 "CLI",
+                                "MACOS",
+                                "IOS",
+                                "IPADOS",
+                                "RAYCAST",
+                                "HOME_ASSISTANT",
                                 "SLACK",
                                 "ZAPIER",
                                 "IFTTT",
                                 "MCP"
                               ],
-                              "description": "platform of the API key (e.g. CLI, WEB)",
+                              "description": "where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side",
                               "type": "string"
                             },
                             "name": {
@@ -26942,15 +26982,20 @@
                             "platform": {
                               "enum": [
                                 "API",
-                                "API_JS",
+                                "JS",
                                 "WEB",
                                 "CLI",
+                                "MACOS",
+                                "IOS",
+                                "IPADOS",
+                                "RAYCAST",
+                                "HOME_ASSISTANT",
                                 "SLACK",
                                 "ZAPIER",
                                 "IFTTT",
                                 "MCP"
                               ],
-                              "description": "platform of the API key (e.g. CLI, WEB)",
+                              "description": "where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side",
                               "type": "string"
                             },
                             "name": {
@@ -28919,15 +28964,20 @@
                             "platform": {
                               "enum": [
                                 "API",
-                                "API_JS",
+                                "JS",
                                 "WEB",
                                 "CLI",
+                                "MACOS",
+                                "IOS",
+                                "IPADOS",
+                                "RAYCAST",
+                                "HOME_ASSISTANT",
                                 "SLACK",
                                 "ZAPIER",
                                 "IFTTT",
                                 "MCP"
                               ],
-                              "description": "platform of the API key (e.g. CLI, WEB)",
+                              "description": "where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side",
                               "type": "string"
                             },
                             "name": {
@@ -29224,15 +29274,20 @@
                             "platform": {
                               "enum": [
                                 "API",
-                                "API_JS",
+                                "JS",
                                 "WEB",
                                 "CLI",
+                                "MACOS",
+                                "IOS",
+                                "IPADOS",
+                                "RAYCAST",
+                                "HOME_ASSISTANT",
                                 "SLACK",
                                 "ZAPIER",
                                 "IFTTT",
                                 "MCP"
                               ],
-                              "description": "platform of the API key (e.g. CLI, WEB)",
+                              "description": "where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side",
                               "type": "string"
                             },
                             "name": {
@@ -29539,15 +29594,20 @@
                             "platform": {
                               "enum": [
                                 "API",
-                                "API_JS",
+                                "JS",
                                 "WEB",
                                 "CLI",
+                                "MACOS",
+                                "IOS",
+                                "IPADOS",
+                                "RAYCAST",
+                                "HOME_ASSISTANT",
                                 "SLACK",
                                 "ZAPIER",
                                 "IFTTT",
                                 "MCP"
                               ],
-                              "description": "platform of the API key (e.g. CLI, WEB)",
+                              "description": "where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side",
                               "type": "string"
                             },
                             "name": {
@@ -30852,15 +30912,20 @@
                             "platform": {
                               "enum": [
                                 "API",
-                                "API_JS",
+                                "JS",
                                 "WEB",
                                 "CLI",
+                                "MACOS",
+                                "IOS",
+                                "IPADOS",
+                                "RAYCAST",
+                                "HOME_ASSISTANT",
                                 "SLACK",
                                 "ZAPIER",
                                 "IFTTT",
                                 "MCP"
                               ],
-                              "description": "platform of the API key (e.g. CLI, WEB)",
+                              "description": "where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side",
                               "type": "string"
                             },
                             "name": {
@@ -31156,15 +31221,20 @@
                             "platform": {
                               "enum": [
                                 "API",
-                                "API_JS",
+                                "JS",
                                 "WEB",
                                 "CLI",
+                                "MACOS",
+                                "IOS",
+                                "IPADOS",
+                                "RAYCAST",
+                                "HOME_ASSISTANT",
                                 "SLACK",
                                 "ZAPIER",
                                 "IFTTT",
                                 "MCP"
                               ],
-                              "description": "platform of the API key (e.g. CLI, WEB)",
+                              "description": "where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side",
                               "type": "string"
                             },
                             "name": {
@@ -31470,15 +31540,20 @@
                             "platform": {
                               "enum": [
                                 "API",
-                                "API_JS",
+                                "JS",
                                 "WEB",
                                 "CLI",
+                                "MACOS",
+                                "IOS",
+                                "IPADOS",
+                                "RAYCAST",
+                                "HOME_ASSISTANT",
                                 "SLACK",
                                 "ZAPIER",
                                 "IFTTT",
                                 "MCP"
                               ],
-                              "description": "platform of the API key (e.g. CLI, WEB)",
+                              "description": "where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side",
                               "type": "string"
                             },
                             "name": {
@@ -33452,15 +33527,20 @@
                             "platform": {
                               "enum": [
                                 "API",
-                                "API_JS",
+                                "JS",
                                 "WEB",
                                 "CLI",
+                                "MACOS",
+                                "IOS",
+                                "IPADOS",
+                                "RAYCAST",
+                                "HOME_ASSISTANT",
                                 "SLACK",
                                 "ZAPIER",
                                 "IFTTT",
                                 "MCP"
                               ],
-                              "description": "platform of the API key (e.g. CLI, WEB)",
+                              "description": "where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side",
                               "type": "string"
                             },
                             "name": {
@@ -33756,15 +33836,20 @@
                             "platform": {
                               "enum": [
                                 "API",
-                                "API_JS",
+                                "JS",
                                 "WEB",
                                 "CLI",
+                                "MACOS",
+                                "IOS",
+                                "IPADOS",
+                                "RAYCAST",
+                                "HOME_ASSISTANT",
                                 "SLACK",
                                 "ZAPIER",
                                 "IFTTT",
                                 "MCP"
                               ],
-                              "description": "platform of the API key (e.g. CLI, WEB)",
+                              "description": "where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side",
                               "type": "string"
                             },
                             "name": {
@@ -34070,15 +34155,20 @@
                             "platform": {
                               "enum": [
                                 "API",
-                                "API_JS",
+                                "JS",
                                 "WEB",
                                 "CLI",
+                                "MACOS",
+                                "IOS",
+                                "IPADOS",
+                                "RAYCAST",
+                                "HOME_ASSISTANT",
                                 "SLACK",
                                 "ZAPIER",
                                 "IFTTT",
                                 "MCP"
                               ],
-                              "description": "platform of the API key (e.g. CLI, WEB)",
+                              "description": "where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side",
                               "type": "string"
                             },
                             "name": {
@@ -34870,7 +34960,7 @@
           "Play"
         ],
         "summary": "Stop the speakers",
-        "description": "Scope: `play`. Stops whatever plays on the speakers in to, also clips of other apps and clips with high priority: a short silent HIGH clip replaces the running one. Plays without priority are refused as busy for about a second afterwards (0.5-0.9 s measured), so wait a moment before the next one. Free, not part of the history. To stop one play, use POST /v1/plays/:uuid/stop.",
+        "description": "Scope: `play`. Stops whatever plays on the speakers in to, on all speakers of the workspace without to (not only the default speakers), also clips of other apps and clips with high priority: a short silent HIGH clip replaces the running one. Plays without priority are refused as busy for about a second afterwards (0.5-0.9 s measured), so wait a moment before the next one. Free, not part of the history. To stop one play, use POST /v1/plays/:uuid/stop.",
         "requestBody": {
           "required": true,
           "content": {
@@ -35529,7 +35619,7 @@
             "in": "query",
             "required": false,
             "schema": {
-              "description": "only plays sent from these platforms (client.platform), CSV: API, API_JS, WEB, CLI, SLACK, ZAPIER, IFTTT, MCP",
+              "description": "only plays sent from these platforms (client.platform), CSV: API, JS, WEB, CLI, MACOS, IOS, IPADOS, RAYCAST, HOME_ASSISTANT, SLACK, ZAPIER, IFTTT, MCP",
               "examples": [
                 "CLI",
                 "CLI,WEB"
@@ -35739,15 +35829,20 @@
                               "platform": {
                                 "enum": [
                                   "API",
-                                  "API_JS",
+                                  "JS",
                                   "WEB",
                                   "CLI",
+                                  "MACOS",
+                                  "IOS",
+                                  "IPADOS",
+                                  "RAYCAST",
+                                  "HOME_ASSISTANT",
                                   "SLACK",
                                   "ZAPIER",
                                   "IFTTT",
                                   "MCP"
                                 ],
-                                "description": "platform of the API key (e.g. CLI, WEB)",
+                                "description": "where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side",
                                 "type": "string"
                               },
                               "name": {
@@ -36166,7 +36261,7 @@
             "in": "query",
             "required": false,
             "schema": {
-              "description": "only plays sent from these platforms (client.platform), CSV: API, API_JS, WEB, CLI, SLACK, ZAPIER, IFTTT, MCP",
+              "description": "only plays sent from these platforms (client.platform), CSV: API, JS, WEB, CLI, MACOS, IOS, IPADOS, RAYCAST, HOME_ASSISTANT, SLACK, ZAPIER, IFTTT, MCP",
               "examples": [
                 "CLI",
                 "CLI,WEB"
@@ -36374,15 +36469,20 @@
                             "platform": {
                               "enum": [
                                 "API",
-                                "API_JS",
+                                "JS",
                                 "WEB",
                                 "CLI",
+                                "MACOS",
+                                "IOS",
+                                "IPADOS",
+                                "RAYCAST",
+                                "HOME_ASSISTANT",
                                 "SLACK",
                                 "ZAPIER",
                                 "IFTTT",
                                 "MCP"
                               ],
-                              "description": "platform of the API key (e.g. CLI, WEB)",
+                              "description": "where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side",
                               "type": "string"
                             },
                             "name": {
@@ -36767,7 +36867,7 @@
             "in": "query",
             "required": false,
             "schema": {
-              "description": "only plays sent from these platforms (client.platform), CSV: API, API_JS, WEB, CLI, SLACK, ZAPIER, IFTTT, MCP",
+              "description": "only plays sent from these platforms (client.platform), CSV: API, JS, WEB, CLI, MACOS, IOS, IPADOS, RAYCAST, HOME_ASSISTANT, SLACK, ZAPIER, IFTTT, MCP",
               "examples": [
                 "CLI",
                 "CLI,WEB"
@@ -36975,15 +37075,20 @@
                             "platform": {
                               "enum": [
                                 "API",
-                                "API_JS",
+                                "JS",
                                 "WEB",
                                 "CLI",
+                                "MACOS",
+                                "IOS",
+                                "IPADOS",
+                                "RAYCAST",
+                                "HOME_ASSISTANT",
                                 "SLACK",
                                 "ZAPIER",
                                 "IFTTT",
                                 "MCP"
                               ],
-                              "description": "platform of the API key (e.g. CLI, WEB)",
+                              "description": "where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side",
                               "type": "string"
                             },
                             "name": {
@@ -37477,7 +37582,7 @@
             "in": "query",
             "required": false,
             "schema": {
-              "description": "only plays sent from these platforms (client.platform), CSV: API, API_JS, WEB, CLI, SLACK, ZAPIER, IFTTT, MCP",
+              "description": "only plays sent from these platforms (client.platform), CSV: API, JS, WEB, CLI, MACOS, IOS, IPADOS, RAYCAST, HOME_ASSISTANT, SLACK, ZAPIER, IFTTT, MCP",
               "examples": [
                 "CLI",
                 "CLI,WEB"
@@ -38266,7 +38371,7 @@
             "in": "query",
             "required": false,
             "schema": {
-              "description": "only plays sent from these platforms (client.platform), CSV: API, API_JS, WEB, CLI, SLACK, ZAPIER, IFTTT, MCP",
+              "description": "only plays sent from these platforms (client.platform), CSV: API, JS, WEB, CLI, MACOS, IOS, IPADOS, RAYCAST, HOME_ASSISTANT, SLACK, ZAPIER, IFTTT, MCP",
               "examples": [
                 "CLI",
                 "CLI,WEB"
@@ -38953,15 +39058,20 @@
                             "platform": {
                               "enum": [
                                 "API",
-                                "API_JS",
+                                "JS",
                                 "WEB",
                                 "CLI",
+                                "MACOS",
+                                "IOS",
+                                "IPADOS",
+                                "RAYCAST",
+                                "HOME_ASSISTANT",
                                 "SLACK",
                                 "ZAPIER",
                                 "IFTTT",
                                 "MCP"
                               ],
-                              "description": "platform of the API key (e.g. CLI, WEB)",
+                              "description": "where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side",
                               "type": "string"
                             },
                             "name": {
@@ -39261,15 +39371,20 @@
                             "platform": {
                               "enum": [
                                 "API",
-                                "API_JS",
+                                "JS",
                                 "WEB",
                                 "CLI",
+                                "MACOS",
+                                "IOS",
+                                "IPADOS",
+                                "RAYCAST",
+                                "HOME_ASSISTANT",
                                 "SLACK",
                                 "ZAPIER",
                                 "IFTTT",
                                 "MCP"
                               ],
-                              "description": "platform of the API key (e.g. CLI, WEB)",
+                              "description": "where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side",
                               "type": "string"
                             },
                             "name": {
@@ -39579,15 +39694,20 @@
                             "platform": {
                               "enum": [
                                 "API",
-                                "API_JS",
+                                "JS",
                                 "WEB",
                                 "CLI",
+                                "MACOS",
+                                "IOS",
+                                "IPADOS",
+                                "RAYCAST",
+                                "HOME_ASSISTANT",
                                 "SLACK",
                                 "ZAPIER",
                                 "IFTTT",
                                 "MCP"
                               ],
-                              "description": "platform of the API key (e.g. CLI, WEB)",
+                              "description": "where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side",
                               "type": "string"
                             },
                             "name": {

@@ -350,6 +350,9 @@ Plus the [common parameters](#common-parameters): `intro`, `outro`, `gap`, `effe
 // Whatever plays on these speakers, also other apps
 await quak.stop({ to: "kitchen" });
 
+// Everything, on all speakers
+await quak.stop();
+
 // Just this play
 await quak.plays.stop(play.id);
 ```
