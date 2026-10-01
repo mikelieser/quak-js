@@ -368,6 +368,37 @@ const { data: one } = await quak.plays.get(plays[0]!.id);
 const { data: last } = await quak.plays.last(); // your newest play
 ```
 
+### Replay and save
+
+```ts
+// Once more, in another room (only the base fee); "last" is your newest play
+await quak.plays.replay(play.id, { to: "kitchen" });
+await quak.plays.replay("last");
+
+// Keep what played as a clip, e.g. a recorded talk (needs a key with scope create)
+const { data: clip } = await quak.plays.save(play.id, { name: "Doorbell" });
+await quak.play.clip({ clip: clip.slug });
+```
+
+Both work while the play's audio is still there: `play.canReplay` and `play.canSave` tell.
+
+### Live status
+
+```ts
+const watch = quak.watch({
+  onPlay: (play) => console.log(play.id, play.status), // every running play once, then every change
+  onReady: () => console.log("connected"),
+  onError: (error) => console.error(error.code), // e.g. ERROR_INVALID_API_KEY, which also ends the watch
+});
+
+// later
+watch.close();
+```
+
+A WebSocket to `GET /v1/plays/watch`. After a drop it connects again by itself (pauses from 1 to 30 s) and gets the
+running plays again. It needs the global `WebSocket` (Node 22 or newer, Bun, Deno, browsers); on Node 20 pass one,
+e.g. `quak.watch({ WebSocket: (await import("ws")).WebSocket, onPlay })`.
+
 ### Lookups
 
 Everything a play can name, read-only (scope `play`). Each returns the parsed answer, `{ data, … }`.
@@ -404,10 +435,18 @@ for (const ambience of ambiences) {
 }
 ```
 
-## Credits
+## Credits and limits
 
 Every authenticated answer carries the workspace's balance in `X-Quak-Credits`. The client keeps the latest one in
 `quak.credits` (`null` before the first request). What a play cost is in `play.credits`.
+
+`quak.workspace.get()` (`GET /v1/workspace`) has the balance too, plus the time zone, the playback defaults and the
+`limits`, to check a text or an upload before sending it:
+
+```ts
+const { data: workspace } = await quak.workspace.get();
+const { textCharacters, audioSeconds, uploadBytes } = workspace.limits;
+```
 
 ## Everything else: the raw client
 
@@ -470,8 +509,10 @@ history. Extra `headers` cannot replace it.
 Node 20 or newer, Bun, Deno (`npm:@quak/js`) and current browsers: anything with `fetch`, `FormData` and `Blob`. CI
 runs the built package on Node 20, 22, 24 and Deno.
 
-**Not yet:** the WebSockets (talk live, `GET /v1/play/talk/live`, and the live status, `GET /v1/plays/watch`). Use the
-raw WebSocket of your runtime for now, see the API reference.
+`quak.watch()` also needs a WebSocket, see [Live status](#live-status).
+
+**Not yet:** talk live (`GET /v1/play/talk/live`, a WebSocket). Use the raw WebSocket of your runtime for now, see the
+API reference.
 
 ## License
 

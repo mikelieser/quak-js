@@ -13,10 +13,14 @@ commit messages. The package is for third parties.
   or the release change.
 - `src/index.ts`: public exports.
 - `src/client.ts`: the `Quak` class, the thin hand-written layer over `openapi-fetch`: headers, `play.*`, `stop`,
-  `plays.*`, `credits` and the lookups for everything a play can name (`speakers`, `voices`, `sounds`, `clips`,
-  `effects`, each an object with `list()` etc.). The workspace's own groups are part of `speakers`, `/v1/groups` is
-  management. Management (keys, workspace, groups, members, invites, Sonos, integrations, user, creating, changing and
-  deleting clips) is not wrapped and stays on the raw client `quak.api`.
+  `plays.*` (with `replay` and `save`), `workspace.get()` (scope `play`, for credits and `limits`), `credits`, `watch()`
+  and the lookups for everything a play can name (`speakers`, `voices`, `sounds`, `clips`, `effects`, each an object
+  with `list()` etc.). The workspace's own groups are part of `speakers`, `/v1/groups` is management. Management (keys,
+  workspace settings, groups, members, invites, Sonos, integrations, user, creating, changing and deleting clips) is not
+  wrapped and stays on the raw client `quak.api`.
+- `src/watch.ts`: the live status (`GET /v1/plays/watch`) behind `quak.watch()`: auth message, reconnect with growing
+  pauses, no reconnect after 4001/4401/4403, a dead connection after 60 s of silence. Only the global `WebSocket` or the
+  one passed in, never a dependency.
 - `src/types.ts`: all parameter and response types, **only derived** from `src/generated/schema.ts`, never rebuilt by
   hand. When the schema lacks a type, fix it in the API, not here.
 - `src/errors.ts`: `QuakError` and `unwrap`.

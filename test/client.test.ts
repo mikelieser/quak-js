@@ -89,6 +89,24 @@ describe("plays", () => {
     expect(result.data.status).toBe("PENDING");
   });
 
+  test("replay, save and the workspace hit their routes with their bodies", async () => {
+    const { quak, calls } = mockQuak();
+    await quak.plays.replay("abc", { to: ["kitchen"], volume: 30 });
+    await quak.plays.replay("last");
+    await quak.plays.save("abc", { name: "Doorbell" });
+    await quak.workspace.get();
+
+    expect(calls.map(({ request, url }) => `${request.method} ${url.pathname}`)).toEqual([
+      "POST /v1/plays/abc/replay",
+      "POST /v1/plays/last/replay",
+      "POST /v1/plays/abc/save",
+      "GET /v1/workspace",
+    ]);
+    expect(await calls[0]!.request.json()).toEqual({ to: ["kitchen"], volume: 30 });
+    expect(await calls[1]!.request.json()).toEqual({});
+    expect(await calls[2]!.request.json()).toEqual({ name: "Doorbell" });
+  });
+
   test("stop, speakers and the history hit their routes", async () => {
     const { quak, calls } = mockQuak({}, () => json({ data: [] }));
     await quak.stop({ to: "kitchen" });

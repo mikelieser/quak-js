@@ -87,6 +87,15 @@ export type PlaysResponse = Success<"getV1Plays">;
 export type PlayQuery = Query<"getV1PlaysByUuid">;
 export type PlayItemResponse = Success<"getV1PlaysByUuid">;
 export type PlayStopResponse = Success<"postV1PlaysByUuidStop">;
+export type ReplayParams = JsonBody<"postV1PlaysByUuidReplay">;
+export type ReplayResponse = Success<"postV1PlaysByUuidReplay">;
+export type SaveParams = JsonBody<"postV1PlaysByUuidSave">;
+export type SaveResponse = Success<"postV1PlaysByUuidSave">;
+
+// The workspace of the key
+
+export type WorkspaceResponse = Success<"getV1Workspace">;
+export type Workspace = WorkspaceResponse["data"];
 
 /** The error body every route answers with on 4xx and 5xx. */
 export type ErrorBody = JsonOf<Responses<"postV1PlayText">[400]>;

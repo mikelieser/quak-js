@@ -1,6 +1,7 @@
 import createClient, { type Client } from "openapi-fetch";
 import { clientHeader } from "./client-header.js";
-import { unwrap } from "./errors.js";
+import { QuakError, unwrap } from "./errors.js";
+import { watchPlays, type Watch, type WatchOptions } from "./watch.js";
 import type {
   Paths,
   PlayClipParams,
@@ -11,6 +12,11 @@ import type {
   PlaysQuery,
   PlaysResponse,
   PlayStopResponse,
+  ReplayParams,
+  ReplayResponse,
+  SaveParams,
+  SaveResponse,
+  WorkspaceResponse,
   PlaySoundParams,
   PlayTalkParams,
   PlayTextParams,
@@ -100,10 +106,26 @@ export class Quak {
     last(query?: PlayQuery): Promise<PlayItemResponse>;
     /** Stop one play while it runs (`POST /v1/plays/{uuid}/stop`). */
     stop(uuid: string): Promise<PlayStopResponse>;
+    /**
+     * Play a play's audio once more, on its speakers or the ones in `to` (`POST /v1/plays/{uuid}/replay`, `"last"`
+     * for your newest). While `canReplay` is true.
+     */
+    replay(uuid: string, params?: ReplayParams): Promise<ReplayResponse>;
+    /**
+     * Keep a play's audio as a clip (`POST /v1/plays/{uuid}/save`, `"last"` for your newest). Needs a key with scope
+     * `create`; while `canSave` is true.
+     */
+    save(uuid: string, params?: SaveParams): Promise<SaveResponse>;
   };
 
-  // Lookups: what a play can name (play scope). Management routes (keys, workspace, members, Sonos, clip uploads
-  // etc.) stay on the raw client `api`.
+  /** The workspace of the key. */
+  readonly workspace: {
+    /** Name, credits, playback defaults, time zone and `limits` (`GET /v1/workspace`). */
+    get(): Promise<WorkspaceResponse>;
+  };
+
+  // Lookups: what a play can name (play scope). Management routes (keys, workspace settings, members, Sonos, clip
+  // uploads etc.) stay on the raw client `api`.
 
   /** Where to play: the slugs for `to`. */
   readonly speakers: {
@@ -143,7 +165,12 @@ export class Quak {
     list(query?: EffectsQuery): Promise<EffectsResponse>;
   };
 
+  private readonly baseUrl: string;
+  private readonly apiKey: string | undefined;
+
   constructor(options: QuakOptions = {}) {
+    this.baseUrl = (options.baseUrl ?? DEFAULT_BASE_URL).replace(/\/+$/, "");
+    this.apiKey = options.apiKey;
     const headers: Record<string, string> = {
       ...options.headers,
       "X-Quak-Client": clientHeader(undefined, options.client),
@@ -153,7 +180,7 @@ export class Quak {
     }
 
     this.api = createClient<Paths>({
-      baseUrl: (options.baseUrl ?? DEFAULT_BASE_URL).replace(/\/+$/, ""),
+      baseUrl: this.baseUrl,
       headers,
       ...(options.fetch ? { fetch: options.fetch } : {}),
     });
@@ -183,6 +210,13 @@ export class Quak {
       get: (uuid, query) => unwrap(api.GET("/v1/plays/{uuid}", { params: { path: { uuid }, query } })),
       last: (query) => unwrap(api.GET("/v1/plays/{uuid}", { params: { path: { uuid: "last" }, query } })),
       stop: (uuid) => unwrap(api.POST("/v1/plays/{uuid}/stop", { params: { path: { uuid } } })),
+      replay: (uuid, params = {}) =>
+        unwrap(api.POST("/v1/plays/{uuid}/replay", { params: { path: { uuid } }, body: params })),
+      save: (uuid, params = {}) =>
+        unwrap(api.POST("/v1/plays/{uuid}/save", { params: { path: { uuid } }, body: params })),
+    };
+    this.workspace = {
+      get: () => unwrap(api.GET("/v1/workspace")),
     };
     this.speakers = {
       list: (query) => unwrap(api.GET("/v1/speakers", { params: { query } })),
@@ -211,6 +245,23 @@ export class Quak {
    */
   stop(params: StopParams = {}): Promise<StopResponse> {
     return unwrap(this.api.POST("/v1/play/stop", { body: params }));
+  }
+
+  /**
+   * The live status of your plays over a WebSocket (`GET /v1/plays/watch`): every running play once, then every
+   * change, reconnecting after a drop. Needs the global WebSocket (Node 22+, Bun, Deno, browsers) or `WebSocket`.
+   *
+   * ```ts
+   * const watch = quak.watch({ onPlay: (play) => console.log(play.id, play.status) });
+   * watch.close();
+   * ```
+   */
+  watch(options: WatchOptions): Watch {
+    if (!this.apiKey) {
+      throw new QuakError({ status: 0, code: "ERROR_MISSING_API_KEY", message: "watch() needs an apiKey" });
+    }
+    const url = `${this.baseUrl.replace(/^http/, "ws")}/v1/plays/watch`;
+    return watchPlays(url, this.apiKey, options);
   }
 }
 
