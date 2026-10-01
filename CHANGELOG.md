@@ -4,6 +4,8 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+## 0.9.6 - 2026-10-01
+
 - `quak.keys.current()` (`GET /v1/keys/current`, any key): the key with its scope, user and workspace, the setup check
 
 ## 0.9.5 - 2026-10-01
