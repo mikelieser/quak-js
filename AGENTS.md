@@ -13,7 +13,8 @@ commit messages. The package is for third parties.
   or the release change.
 - `src/index.ts`: public exports.
 - `src/client.ts`: the `Quak` class, the thin hand-written layer over `openapi-fetch`: headers, `play.*`, `stop`,
-  `plays.*` (with `replay` and `save`), `workspace.get()` (scope `play`, for credits and `limits`), `credits`, `watch()`
+  `plays.*` (with `replay` and `save`), `workspace.get()` (scope `play`, for credits and `limits`), `keys.current()` (any key, the setup check), `credits`,
+  `watch()`
   and the lookups for everything a play can name (`speakers`, `voices`, `sounds`, `clips`, `effects`, each an object
   with `list()` etc.). The workspace's own groups are part of `speakers`, `/v1/groups` is management. Management (keys,
   workspace settings, groups, members, invites, Sonos, integrations, user, creating, changing and deleting clips) is not

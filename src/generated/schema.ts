@@ -1036,6 +1036,30 @@ export interface paths {
         patch: operations["patchV1ClipsBySlug"];
         trace?: never;
     };
+    "/v1/keys/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get current API key
+         * @description Scope: any key. Returns the API key of this request with its scope, its workspace (the same object as GET /v1/workspace, with your role, credits, defaults and limits) and its user, e.g. to show “Key ‘Raycast’, scope play, workspace ‘Home’” when a client is set up. For a login key the workspace is the one of this request (X-Quak-Workspace, else the last used). Works with every key. Never the key itself, only its start (prefix).
+         */
+        get: operations["getV1KeysCurrent"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete current API key
+         * @description Scope: any key. Deletes the API key used for the current request.
+         */
+        delete: operations["deleteV1KeysCurrent"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/keys": {
         parameters: {
             query?: never;
@@ -1082,26 +1106,6 @@ export interface paths {
          * @description Scope: `manage`. Admins of the workspace only. Changes one of the workspace's API keys by its id or slug (scope manage): name, slug and scope separately, a new name keeps the slug. Names and slugs are unique among the workspace's keys (names case-insensitive). The scope can be set up to your own key's scope.
          */
         patch: operations["patchV1KeysById"];
-        trace?: never;
-    };
-    "/v1/keys/current": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /**
-         * Delete current API key
-         * @description Scope: any key. Deletes the API key used for the current request.
-         */
-        delete: operations["deleteV1KeysCurrent"];
-        options?: never;
-        head?: never;
-        patch?: never;
         trace?: never;
     };
     "/v1/sonos": {
@@ -12043,6 +12047,215 @@ export interface operations {
             };
         };
     };
+    getV1KeysCurrent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Response for status 200 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            /** Format: uuid */
+                            id: string;
+                            name: string | null;
+                            slug: string | null;
+                            /** @enum {string} */
+                            type: "LOGIN" | "OAUTH" | "USER" | "SYSTEM";
+                            /** @enum {string} */
+                            scope: "play" | "create" | "manage";
+                            /** @description where the key was made, e.g. API, WEB, CLI, MCP, SLACK, IFTTT */
+                            origin: string;
+                            /**
+                             * @description the start of the token to recognize it
+                             * @example qk_key_7Fh2…
+                             */
+                            prefix: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            lastRequestAt: string | null;
+                            lastClient: {
+                                name: string;
+                                version: string | null;
+                            } | null;
+                            workspace: {
+                                /** Format: uuid */
+                                id: string;
+                                /**
+                                 * @description unique, from the owner's email at sign-up
+                                 * @example mike
+                                 */
+                                slug: string;
+                                /** @example Personal */
+                                name: string;
+                                /**
+                                 * @description quiet hours (and later schedules) run in this time zone
+                                 * @example Europe/Berlin
+                                 */
+                                timeZone: string;
+                                /**
+                                 * @description your role in the workspace
+                                 * @default ADMIN
+                                 * @enum {string}
+                                 */
+                                role: "ADMIN" | "MEMBER";
+                                credits: {
+                                    total: number;
+                                    /** @description one time, free and promo credits, never expire */
+                                    wallet: number;
+                                    /** @description credits of the current subscription period */
+                                    subscription: number;
+                                };
+                                subscription: {
+                                    id: string | null;
+                                    state: string;
+                                };
+                                defaults: {
+                                    voice: string;
+                                    /** @description TTS language of multi-language voices when a play names none, e.g. de-DE */
+                                    language: string;
+                                    volume: number;
+                                    intro: (string | null) | null;
+                                    outro: (string | null) | null;
+                                    /** @description the default of `to` in plays, speaker slugs from GET /v1/speakers */
+                                    speakers: string[];
+                                    gap: number;
+                                    /** @description Beta, may change without notice. voice effect for text, talk, files and processed URLs, none = off */
+                                    effect: string;
+                                    /**
+                                     * @description strength of the voice effect: off, weak, medium or strong
+                                     * @default off
+                                     * @enum {string}
+                                     */
+                                    effectIntensity: "off" | "weak" | "medium" | "strong";
+                                    /** @description Beta, may change without notice. ambience for text, talk, files and processed URLs, none = off */
+                                    ambience: string;
+                                    /**
+                                     * @description strength of the ambience: off, weak, medium or strong
+                                     * @default off
+                                     * @enum {string}
+                                     */
+                                    ambienceIntensity: "off" | "weak" | "medium" | "strong";
+                                    /** @description when nothing plays, in the workspace time zone, e.g. "22-7" or "none" */
+                                    quietHours: string;
+                                };
+                                /** @description How long generated play audio stays on the server after its last use, in minutes: 1440 (default), 720, 180, 60 or 5. */
+                                audioCacheMinutes: number;
+                                /** @description What a play may be in this workspace. Read it instead of hard-coding the numbers: they may change and later depend on the plan. */
+                                limits: {
+                                    /**
+                                     * @description max. characters of a text play
+                                     * @example 1000
+                                     */
+                                    textCharacters: number;
+                                    /**
+                                     * @description max. seconds of speech in a recorded talk, longer takes are cut
+                                     * @example 180
+                                     */
+                                    talkSeconds: number;
+                                    /**
+                                     * @description max. seconds of talk live, a warning comes 30 s before
+                                     * @example 180
+                                     */
+                                    liveSeconds: number;
+                                    /**
+                                     * @description max. seconds of a file, a processed url and an own clip
+                                     * @example 180
+                                     */
+                                    audioSeconds: number;
+                                    /**
+                                     * @description max. bytes of an upload (file, talk, clip) and a url download
+                                     * @example 10485760
+                                     */
+                                    uploadBytes: number;
+                                };
+                                /** Format: date-time */
+                                createdAt: string;
+                            };
+                            user: {
+                                /** Format: uuid */
+                                id: string;
+                                email: string;
+                                name: string | null;
+                            };
+                        };
+                    };
+                };
+            };
+            /** @description Response for status 401 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            /**
+                             * @description what went wrong, stable for code to check; message is for people
+                             * @enum {string}
+                             */
+                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_FORBIDDEN_ORIGIN" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVITE_ACCEPTED" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NO_TESTERS" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_OAUTH_CANCELED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
+                            message: string;
+                            field?: string;
+                            details?: unknown;
+                            /** @description the X-Request-Id of the answer, to find the request in our log */
+                            requestId?: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    deleteV1KeysCurrent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Response for status 204 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Response for status 401 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        error: {
+                            /**
+                             * @description what went wrong, stable for code to check; message is for people
+                             * @enum {string}
+                             */
+                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_FORBIDDEN_ORIGIN" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVITE_ACCEPTED" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NO_TESTERS" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_OAUTH_CANCELED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
+                            message: string;
+                            field?: string;
+                            details?: unknown;
+                            /** @description the X-Request-Id of the answer, to find the request in our log */
+                            requestId?: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
     getV1Keys: {
         parameters: {
             query?: {
@@ -12629,48 +12842,6 @@ export interface operations {
             };
             /** @description Response for status 409 */
             409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_FORBIDDEN_ORIGIN" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVITE_ACCEPTED" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NO_TESTERS" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_OAUTH_CANCELED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
-                };
-            };
-        };
-    };
-    deleteV1KeysCurrent: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Response for status 204 */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Response for status 401 */
-            401: {
                 headers: {
                     [name: string]: unknown;
                 };

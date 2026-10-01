@@ -440,6 +440,14 @@ for (const ambience of ambiences) {
 Every authenticated answer carries the workspace's balance in `X-Quak-Credits`. The client keeps the latest one in
 `quak.credits` (`null` before the first request). What a play cost is in `play.credits`.
 
+When a client is set up, `quak.keys.current()` (`GET /v1/keys/current`, any key) checks the key in one call: its
+name and scope, the user and the workspace.
+
+```ts
+const { data } = await quak.keys.current();
+console.log(`Key "${data.name}", scope ${data.scope}, workspace "${data.workspace.name}"`);
+```
+
 `quak.workspace.get()` (`GET /v1/workspace`) has the balance too, plus the time zone, the playback defaults and the
 `limits`, to check a text or an upload before sending it:
 

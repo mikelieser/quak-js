@@ -96,6 +96,7 @@ export type SaveResponse = Success<"postV1PlaysByUuidSave">;
 
 export type WorkspaceResponse = Success<"getV1Workspace">;
 export type Workspace = WorkspaceResponse["data"];
+export type CurrentKeyResponse = Success<"getV1KeysCurrent">;
 
 /** The error body every route answers with on 4xx and 5xx. */
 export type ErrorBody = JsonOf<Responses<"postV1PlayText">[400]>;

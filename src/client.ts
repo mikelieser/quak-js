@@ -17,6 +17,7 @@ import type {
   SaveParams,
   SaveResponse,
   WorkspaceResponse,
+  CurrentKeyResponse,
   PlaySoundParams,
   PlayTalkParams,
   PlayTextParams,
@@ -118,6 +119,15 @@ export class Quak {
     save(uuid: string, params?: SaveParams): Promise<SaveResponse>;
   };
 
+  /** The key itself. */
+  readonly keys: {
+    /**
+     * The key of this client with its scope, user and workspace (the same object as `workspace.get()`), for any key:
+     * the check when a client is set up (`GET /v1/keys/current`).
+     */
+    current(): Promise<CurrentKeyResponse>;
+  };
+
   /** The workspace of the key. */
   readonly workspace: {
     /** Name, credits, playback defaults, time zone and `limits` (`GET /v1/workspace`). */
@@ -214,6 +224,9 @@ export class Quak {
         unwrap(api.POST("/v1/plays/{uuid}/replay", { params: { path: { uuid } }, body: params })),
       save: (uuid, params = {}) =>
         unwrap(api.POST("/v1/plays/{uuid}/save", { params: { path: { uuid } }, body: params })),
+    };
+    this.keys = {
+      current: () => unwrap(api.GET("/v1/keys/current")),
     };
     this.workspace = {
       get: () => unwrap(api.GET("/v1/workspace")),

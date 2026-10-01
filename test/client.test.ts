@@ -95,12 +95,14 @@ describe("plays", () => {
     await quak.plays.replay("last");
     await quak.plays.save("abc", { name: "Doorbell" });
     await quak.workspace.get();
+    await quak.keys.current();
 
     expect(calls.map(({ request, url }) => `${request.method} ${url.pathname}`)).toEqual([
       "POST /v1/plays/abc/replay",
       "POST /v1/plays/last/replay",
       "POST /v1/plays/abc/save",
       "GET /v1/workspace",
+      "GET /v1/keys/current",
     ]);
     expect(await calls[0]!.request.json()).toEqual({ to: ["kitchen"], volume: 30 });
     expect(await calls[1]!.request.json()).toEqual({});
