@@ -4,6 +4,8 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+## 0.9.5 - 2026-10-01
+
 - `quak.plays.replay(id, params?)` and `quak.plays.save(id, { name? })`, also with `"last"`
 - `quak.workspace.get()`: balance, time zone, playback defaults and `limits`
 - `quak.watch({ onPlay, onReady?, onClose?, onError? })`: the live status over the global WebSocket, reconnecting after
