@@ -29,3 +29,6 @@ git push origin main v0.9.1
 The tag starts the release workflow: it checks the tag against `package.json`, runs the complete CI (`ci.yml`, including
 the packed tarball on Node 20/22/24 and Deno), publishes exactly that tarball to npm with Trusted Publishing (with
 provenance), then creates the GitHub release.
+
+Notifications: announcements on, for successful and failed releases (job `announce`, one clip per release on Mike's
+Sonos, secret `QUAK_API_KEY`).

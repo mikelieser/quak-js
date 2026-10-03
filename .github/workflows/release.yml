@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   tag:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
       - name: Tag matches the version in package.json
@@ -31,7 +31,7 @@ jobs:
 
   publish:
     needs: ci
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       id-token: write
@@ -53,7 +53,7 @@ jobs:
 
   github-release:
     needs: publish
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: write
     steps:
@@ -70,3 +70,20 @@ jobs:
           flags=""
           case "$GITHUB_REF_NAME" in v0.*) flags="--prerelease" ;; esac
           gh release create "$GITHUB_REF_NAME" --verify-tag --title "$GITHUB_REF_NAME" --notes-file notes.md $flags
+
+  # Exactly one announcement per release on Mike's Sonos (quak-api/docs/deploy-notifications.md): quak-js-released when
+  # the package reached npm, else quak-js-failed, also when the tag check or CI stopped it. None for cancelled runs.
+  # The action never fails the run, quiet hours skip the play for free.
+  announce:
+    needs: publish
+    if: ${{ always() && !cancelled() }}
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: quakparty/quak-github-action@v1
+        with:
+          api-key: ${{ secrets.QUAK_API_KEY }}
+          type: clip
+          clip: ${{ needs.publish.result == 'success' && 'quak-js-released' || 'quak-js-failed' }}
+          to: schlafzimmer
+          volume: 15
+          quiet-hours: 21-8

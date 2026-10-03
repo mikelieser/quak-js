@@ -56,6 +56,10 @@ commit messages. The package is for third parties.
    complete CI (`ci.yml` as a reusable workflow), publishes the tarball CI packed and tested via npm Trusted Publishing
    (OIDC, no token, provenance included) and creates the GitHub release.
 
+Notifications: announcements on, for successful and failed releases. The job `announce` in `release.yml` plays the clip
+`quak-js-released` or `quak-js-failed` on Mike's Sonos (secret `QUAK_API_KEY`, scheme in
+`quak-api/docs/deploy-notifications.md`), exactly one per release; `ci.yml` announces nothing.
+
 Versions stay on 0.9.x for now, like the web app and the CLI, also after the launch; when to move to 1.0 is decided
 later. The first version, 0.9.0, is
 published by hand, since trusted publishing needs an existing package. Until 29.09.2026 the package was called
