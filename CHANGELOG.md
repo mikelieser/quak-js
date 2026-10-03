@@ -4,6 +4,8 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+- No changes to the package: the release workflow runs on ubuntu-26.04 and announces releases
+
 ## 0.9.6 - 2026-10-01
 
 - `quak.keys.current()` (`GET /v1/keys/current`, any key): the key with its scope, user and workspace, the setup check
