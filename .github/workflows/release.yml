@@ -79,7 +79,9 @@ jobs:
     if: ${{ always() && !cancelled() }}
     runs-on: ubuntu-26.04
     steps:
-      - uses: quakparty/quak-github-action@v1
+      # Plays a short clip on our Sonos speakers when a release is out: https://quak.party/apps/github
+      - name: Announce with Quak on Sonos
+        uses: quakparty/quak-github-action@v1
         with:
           api-key: ${{ secrets.QUAK_API_KEY }}
           type: clip
